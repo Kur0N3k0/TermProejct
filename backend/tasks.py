@@ -14,6 +14,7 @@ def getRegionSafety(self, region):
     with app.app_context():
         # start business logic
         self.update_state(state="PROGRESS", meta="progress..")
+
         
 
         result = region + ": 100%"

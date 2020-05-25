@@ -1,11 +1,13 @@
 from flask import Flask, session
 from appctx import app
 from router import prototype
+import database
+
+database.initialize()
 
 # default router
 @app.route("/")
 def main():
-    session["test"] = 1
     return ""
 
 # add router

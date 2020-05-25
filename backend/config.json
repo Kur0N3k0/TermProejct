@@ -1,0 +1,6 @@
+{
+    "database": "mongodb://localhost:27017/myfitroom",
+    "flask": {
+        "secretkey": "_myfitroom_secret_key_"
+    }
+}

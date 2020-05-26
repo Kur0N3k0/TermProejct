@@ -1,1 +1,1 @@
-celery -A tasks worker --loglevel=info --autoscale=10,3
+celery -A tasks.celery worker --loglevel=info --autoscale=10,3

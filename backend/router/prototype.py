@@ -27,8 +27,21 @@ def regionSafety(region):
 
         task_redis.set(region, info, ex=3600 * 24) # 1 day
         return f"task accepted({task.id})"
+
+    cached = json.loads(cached)
+    taskid = cached["taskid"]
+    task = tasks.getRegionSafety.AsyncResult(taskid)
+    if task.state == "PROGRESS":
+        return task.info
+    elif task.state != "FAILURE":
+        cached["result"] = task.info
+        cached = json.dumps(cached)
+        task_redis.set(region, cached, ex=3600 * 24)
+        return cached
+
     return cached
 
+"""
 @router.route("/region/safety/<region>/get")
 def getRegionSafety(region):
     cached = task_redis.get(region)
@@ -43,6 +56,7 @@ def getRegionSafety(region):
     elif task.state != "FAILURE":
         cached["result"] = task.info
         cached = json.dumps(cached)
-        task_redis.set(region, cached)
+        task_redis.set(region, cached, ex=3600 * 24)
         return cached
     return "failed.."
+"""

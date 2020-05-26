@@ -10,6 +10,14 @@ mongo = PyMongo()
 def initialize():
     collections = mongo.db.collection_names()
     if "locations" not in collections and "rooms" not in collections:
+        col: wrappers.Collection = mongo.db.locations
+        col.create_index("id", unique=True)
+        col.create_index("code", unique=True)
+
+        col: wrappers.Collection = mongo.db.rooms
+        col.create_index("id", unique=True)
+        col.create_index("seq", unique=True)
+
         db = json.load(open("./db.json"))
         for key in db:
             for key2 in db[key]:

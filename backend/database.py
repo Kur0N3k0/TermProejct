@@ -1,8 +1,10 @@
 from flask_pymongo import PyMongo, wrappers
+from pymongo import ASCENDING
 import redis, json
 
 from model.location import Location
 from model.room import Room
+from model.cctv import CCTV
 
 task_redis = redis.StrictRedis(host='localhost', port=6379, db=2)
 mongo = PyMongo()
@@ -11,11 +13,9 @@ def initialize():
     collections = mongo.db.collection_names()
     if "locations" not in collections and "rooms" not in collections:
         col: wrappers.Collection = mongo.db.locations
-        col.create_index("id", unique=True)
         col.create_index("code", unique=True)
 
         col: wrappers.Collection = mongo.db.rooms
-        col.create_index("id", unique=True)
         col.create_index("seq", unique=True)
 
         db = json.load(open("./db.json"))
@@ -42,3 +42,15 @@ def initialize():
                     
                     if items:
                         col.insert_many(items)
+
+    if "cctv" not in collections:
+        col: wrappers.Collection = mongo.db.cctv
+        db = json.load(open("./cctv.json"))
+        items = []
+        for item in db["records"]:
+            if "latitude" in item and "longtitude" in item:
+                cctv = CCTV(**item)
+                items += [ cctv.__dict__ ]
+
+        if items:
+            col.insert_many(items)

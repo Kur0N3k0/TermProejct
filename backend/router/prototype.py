@@ -1,9 +1,12 @@
 from flask import Flask, url_for, request, session, render_template, redirect, Blueprint, jsonify
 from flask_pymongo import wrappers
+
 from database import task_redis, mongo
 from api.user import UserAPI
+from model.location import Location
 
 import uuid, json
+import pymongo
 import tasks
 
 router = Blueprint("proto", __name__)
@@ -72,7 +75,7 @@ def searchLocations():
     if subway:
         query["subways"] = { "$regex": subway }
 
-    result = list(col.find(query))
+    result = list(col.find(query).sort([("full_name", pymongo.ASCENDING)]))
     for item in result:
         del item["_id"]
 
@@ -86,9 +89,28 @@ def searchRooms(region):
     if region:
         query["region_code"] = region
 
-    result = list(col.find(query))
-    for item in result:
+    # get rooms in region
+    rooms = list(col.find(query))
+    for item in rooms:
         del item["_id"]
+
+    # get region info
+    col: wrappers.Collection = mongo.db.locations
+    loc = col.find_one({ "code": region })
+    del loc["_id"]
+    location = Location(**loc)
+
+    # get cctv info
+    col: wrappers.Collection = mongo.db.cctv
+    cctv = col.find_one({ "address": { "$regex": location.name } })
+    if cctv and "_id" in cctv:
+        del cctv["_id"]
+
+    result = {
+        "rooms": rooms,
+        "location": location.__dict__,
+        "cctv": cctv
+    }
 
     return jsonify(result)
 

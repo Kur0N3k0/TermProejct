@@ -1,0 +1,140 @@
+<html>
+    <head>
+        <title>Prototype - MyFitRoom</title>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c39e48badc987091b1abf44a085651e"></script>
+    </head>
+    <script>
+        let map = undefined;
+
+        let getRooms = (self, code) => {
+            var pos = $(self).attr("data-position").split(",");
+            map.setCenter(new kakao.maps.LatLng(pos[0], pos[1]));
+
+            $.get("/proto/rooms/" + code, (res) => {
+                let rooms = res["rooms"];
+                let oneroom = $("#oneroom");
+                oneroom.empty();
+                for(var i = 0; i< rooms.length; i++) {
+                    var title = rooms[i]["title"];
+                    var type = rooms[i]["room_type_str"];
+                    var price = rooms[i]["price_title"];
+                    oneroom.append(`
+                    <div id="oneroom-item">
+                        <p id="oneroom-title">${title}</p>
+                        <p id="oneroom-type">${type}</p>
+                        <p id="oneroom-price">${price}</p>
+                    </div>
+                    `);
+                }
+
+                let positions = [];
+                let cctvs = res["cctv"];
+                let cctv = $("#cctv");
+                for(var i = 0; i < cctvs.length; i++) {
+                    var name = cctvs[i]["location_name"];
+                    var addr = cctvs[i]["address"];
+                    
+                    cctv.append(`
+                    <div id="cctv-item">
+                        <p id="cctv-name">${name}</p>
+                        <p id="cctv-addr">${addr}</p>
+                    </div>
+                    `);
+                    positions.push( {
+                        title: name, 
+                        latlng: new kakao.maps.LatLng(cctvs[i]["latitude"], cctvs[i]["longtitude"])
+                    });
+                }
+
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"; 
+                for (var i = 0; i < positions.length; i ++) {
+                    
+                    // 마커 이미지의 이미지 크기 입니다
+                    var imageSize = new kakao.maps.Size(24, 35); 
+                    
+                    // 마커 이미지를 생성합니다    
+                    var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); 
+                    
+                    // 마커를 생성합니다
+                    var marker = new kakao.maps.Marker({
+                        map: map, // 마커를 표시할 지도
+                        position: positions[i].latlng, // 마커를 표시할 위치
+                        title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                        image : markerImage // 마커 이미지 
+                    });
+                }
+            });
+        };
+
+        $(() => {
+            $("#search-btn").click(() => {
+                let region = $("#region").val();
+                $.get("/proto/search?region=" + region, (res) => {
+                    let result = res;
+                    let tbody = $("#search-result table > tbody");
+                    tbody.empty();
+                    for(var i = 0; i < result.length; i++){
+                        tbody.append(`<tr>
+                            <td>${result[i]["full_name"]}</td>
+                            <td>
+                                <input type="button" onclick="getRooms(this, ${result[i]["code"]})" data-position="${result[i]["location"][1]},${result[i]["location"][0]}" value="선택">
+                            </td>
+                        </tr>`);
+                    }
+                });
+            });
+
+            var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+                mapOption = { 
+                    center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+                    level: 7 // 지도의 확대 레벨
+                };
+
+            map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+        });
+    </script>
+    <body>
+        <input type="button" onclick="location='#search'" value="검색">
+        <input type="button" onclick="location='#search-result'" value="검색결과">
+
+        <h2>검색</h2>
+        <div id="search">
+            <label for="region">검색: </label>
+            <input type="text" id="region" name="region">
+            <input type="hidden" name="subway">
+            <input type="button" id="search-btn" value="검색">
+        </div>
+        <h2>검색 결과</h2>
+        <div id="search-result">
+            <table border="1">
+                <thead>
+                    <tr>
+                        <td>주소</td>
+                        <td></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+        <h2>CCTV 지도</h2>
+        <div id="map" style="width:500px;height:400px;"></div>
+        <h2>원룸 정보</h2>
+        <div id="oneroom">
+            <div id="oneroom-item">
+                <p id="oneroom-title"></p>
+                <p id="oneroom-type"></p>
+                <p id="oneroom-price"></p>
+            </div>
+        </div>
+        <h2>CCTV</h2>
+        <div id="cctv">
+            <div id="cctv-item">
+                <p id="cctv-name"></p>
+                <p id="cctv-addr"></p>
+            </div>
+        </div>
+    </body>
+</html>

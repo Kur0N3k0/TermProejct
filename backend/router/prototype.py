@@ -14,7 +14,7 @@ userapi = UserAPI()
 
 @router.route("/")
 def main():
-    return "main"
+    return render_template("prototype.html")
 
 ################################################
 # user
@@ -101,15 +101,25 @@ def searchRooms(region):
     location = Location(**loc)
 
     # get cctv info
+    # cctv address: mixed data(new, old...)
     col: wrappers.Collection = mongo.db.cctv
-    cctv = col.find_one({ "address": { "$regex": location.name } })
-    if cctv and "_id" in cctv:
+    cctvs = list(col.find({
+        "longtitude": {
+            "$gte": location.bbox[0][0],
+            "$lte": location.bbox[1][0]
+        },
+        "latitude": {
+            "$gte": location.bbox[0][1],
+            "$lte": location.bbox[1][1]
+        }
+    }))
+    for cctv in cctvs:
         del cctv["_id"]
 
     result = {
         "rooms": rooms,
         "location": location.__dict__,
-        "cctv": cctv
+        "cctv": cctvs
     }
 
     return jsonify(result)

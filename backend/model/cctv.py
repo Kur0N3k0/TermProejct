@@ -7,8 +7,8 @@ class CCTV(object):
         else:
             self.address        = kwargs["address_code"]
         
-        self.latitude           = kwargs["latitude"]
-        self.longtitude         = kwargs["longtitude"]
+        self.latitude           = float(kwargs["latitude"])
+        self.longtitude         = float(kwargs["longtitude"])
         if "setup_year" in kwargs:
             self.setup_year     = kwargs["setup_year"]
         

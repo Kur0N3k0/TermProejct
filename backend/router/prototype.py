@@ -100,6 +100,23 @@ def searchRooms(region):
     del loc["_id"]
     location = Location(**loc)
 
+    # get security_light info
+    # security_light address: mixed data(new, old...)
+    col: wrappers.Collection = mongo.db.security_light
+    security_lights = list(col.find({
+        "longtitude": {
+            "$gte": location.bbox[0][0],
+            "$lte": location.bbox[1][0]
+        },
+        "latitude": {
+            "$gte": location.bbox[0][1],
+            "$lte": location.bbox[1][1]
+        }
+    }))
+    for security_light in security_lights:
+        del security_light["_id"]
+
+
     # get cctv info
     # cctv address: mixed data(new, old...)
     col: wrappers.Collection = mongo.db.cctv
@@ -119,6 +136,7 @@ def searchRooms(region):
     result = {
         "rooms": rooms,
         "location": location.__dict__,
+        "security_light": security_lights,
         "cctv": cctvs
     }
 

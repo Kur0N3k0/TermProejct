@@ -4,6 +4,7 @@ import redis, json
 
 from model.location import Location
 from model.room import Room
+from model.security_light import SecurityLight
 from model.cctv import CCTV
 
 task_redis = redis.StrictRedis(host='localhost', port=6379, db=2)
@@ -43,6 +44,18 @@ def initialize():
                     if items:
                         col.insert_many(items)
 
+    if "security_light" not in collections:
+        col: wrappers.Collection = mongo.db.security_light
+        db = json.load(open("./security_light.json"))
+        items = []
+        for item in db["records"]:
+            if "latitude" in item and "longtitude" in item:
+                cctv = SecurityLight(**item)
+                items += [ cctv.__dict__ ]
+
+        if items:
+            col.insert_many(items)
+    
     if "cctv" not in collections:
         col: wrappers.Collection = mongo.db.cctv
         db = json.load(open("./cctv.json"))
@@ -54,3 +67,5 @@ def initialize():
 
         if items:
             col.insert_many(items)
+    
+    

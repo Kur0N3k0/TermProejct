@@ -12,25 +12,26 @@ mongo = PyMongo()
 
 def initialize():
     collections = mongo.db.collection_names()
-    if "locations" not in collections and "rooms" not in collections:
+    if "locations" not in collections:
         col: wrappers.Collection = mongo.db.locations
         col.create_index("code", unique=True)
 
+        locations = json.load(open("./db/locations.json"))
+
+        col: wrappers.Collection = mongo.db.locations
+        for location in locations:
+            loc = Location(**location)
+            col.insert_one(loc.__dict__)
+
+    if "rooms" not in collections:
         col: wrappers.Collection = mongo.db.rooms
         col.create_index("seq", unique=True)
 
-        db = json.load(open("./db.json"))
+        db = json.load(open("./db/db.json"))
         for key in db:
             for key2 in db[key]:
                 location = None
                 for info in db[key][key2]:
-                    try:
-                        locs = info["locs"][0]["loc"]
-                        location = Location(**locs)
-                        col: wrappers.Collection = mongo.db.locations
-                        col.insert_one(location.__dict__)
-                    except Exception as e:
-                        pass
                     rooms_info = info["rooms"]
 
                     col: wrappers.Collection = mongo.db.rooms
@@ -46,7 +47,7 @@ def initialize():
 
     if "security_light" not in collections:
         col: wrappers.Collection = mongo.db.security_light
-        db = json.load(open("./security_light.json"))
+        db = json.load(open("./db/security_light.json"))
         items = []
         for item in db["records"]:
             if "latitude" in item and "longtitude" in item:
@@ -58,7 +59,7 @@ def initialize():
     
     if "cctv" not in collections:
         col: wrappers.Collection = mongo.db.cctv
-        db = json.load(open("./cctv.json"))
+        db = json.load(open("./db/cctv.json"))
         items = []
         for item in db["records"]:
             if "latitude" in item and "longtitude" in item:

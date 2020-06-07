@@ -1,5 +1,6 @@
 from celery import Celery
 from appctx import app
+from api.safety import SafetyAPI
 
 BROKER = "redis://localhost:6379/0"
 CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
@@ -15,7 +16,5 @@ def getRegionSafety(self, region):
         # start business logic
         self.update_state(state="PROGRESS", meta="progress..")
 
-        
-
-        result = region + ": 100%"
-        return result
+        safety_api = SafetyAPI()
+        return safety_api.getSafetyByRegionCode(region)

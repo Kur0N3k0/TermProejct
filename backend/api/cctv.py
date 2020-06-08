@@ -2,7 +2,7 @@ from flask_pymongo import wrappers
 from database import mongo
 from math import *
 
-class cctvAPI(object):
+class CCTVAPI(object):
     def __init__(self):
         pass
 

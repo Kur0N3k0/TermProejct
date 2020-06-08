@@ -115,7 +115,7 @@
                         tbody.append(`<tr>
                             <td>${result[i]["full_name"]}</td>
                             <td>
-                                <input type="button" onclick="getRooms(this, ${result[i]["code"]})" data-position="${result[i]["location"][1]},${result[i]["location"][0]}" value="선택">
+                                <input type="button" onclick="getRooms(this, ${result[i]["code"]})" data-position="${result[i]["latitude"]},${result[i]["longtitude"]}" value="선택">
                             </td>
                         </tr>`);
                     }

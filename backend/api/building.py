@@ -10,7 +10,7 @@ UTMK = Proj(init='epsg:5174')
 # longtitude, latitude
 WGS84 = Proj(init='epsg:4326')
 
-class Building(object):
+class BuildingAPI(object):
     def __init__(self):
         self.external_api = {
             "WFS": "http://apis.data.go.kr/1611000/nsdi/BuildingUseService/wfs/getBuildingUseWFS",
@@ -55,7 +55,7 @@ class Building(object):
             else:
                 if detail_code not in bfilter:
                     continue
-                
+
             polyLine = []
             pos = pos.split(" ")
             for i in range(0, len(pos), 2):
@@ -85,8 +85,8 @@ class Building(object):
         field = result["buildingUses"]["field"]
         return field
 
-    def getBuildings(self, longtitude, latitude, km:float, count):
-        return self.__requestWFS(longtitude, latitude, km, count)
+    def getBuildings(self, longtitude, latitude, km:float, count, bfilter):
+        return self.__requestWFS(longtitude, latitude, km, count, bfilter)
     
     def getDetail(self, pnu):
         return self.__requestDetail(pnu)

@@ -7,6 +7,10 @@ class Location(object):
         self.full_name              = kwargs["full_name"]
         self.zoom                   = kwargs["zoom"]
         self.location               = kwargs["location"]
+        self.geo                    = {
+            "type": "Point",
+            "coordinates": [ self.location[0], self.location[1] ]
+        }
         self.bbox                   = kwargs["bbox"]
         self.region                 = kwargs["region"]
         self.radius                 = kwargs["radius"]

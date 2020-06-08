@@ -1,3 +1,5 @@
+from pyproj import Proj, transform
+
 import numbers
 import math
 
@@ -50,3 +52,7 @@ class Geo:
             dLon -= 360   # 반대편 각을 구한다
         dLat = y2-y1      # 위도 차이
         return round(math.sqrt(pow(dLon,2)+pow(dLat,2)),round_decimal_digits)
+
+    @staticmethod
+    def transformCoordinate(_from, _to, coordinate: tuple):
+        return transform(_from, _to, **coordinate)

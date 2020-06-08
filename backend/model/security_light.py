@@ -9,6 +9,10 @@ class SecurityLight(object):
         
         self.latitude           = float(kwargs["latitude"])
         self.longtitude         = float(kwargs["longtitude"])
+        self.geo                = {
+            "type": "Point",
+            "coordinates": [ self.longtitude, self.latitude ]
+        }
         if "setup_year" in kwargs:
             self.setup_year     = kwargs["setup_year"]
         

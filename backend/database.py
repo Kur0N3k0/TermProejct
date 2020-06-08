@@ -1,5 +1,5 @@
 from flask_pymongo import PyMongo, wrappers
-from pymongo import ASCENDING
+from pymongo import ASCENDING, GEOSPHERE
 import redis, json
 
 from model.location import Location
@@ -15,6 +15,7 @@ def initialize():
     if "locations" not in collections:
         col: wrappers.Collection = mongo.db.locations
         col.create_index("code", unique=True)
+        col.ensure_index([("geo", GEOSPHERE)])
 
         locations = json.load(open("./db/locations.json"))
 
@@ -26,27 +27,32 @@ def initialize():
     if "rooms" not in collections:
         col: wrappers.Collection = mongo.db.rooms
         col.create_index("seq", unique=True)
+        col.ensure_index([("geo", GEOSPHERE)])
 
         db = json.load(open("./db/db.json"))
         for key in db:
             for key2 in db[key]:
-                location = None
                 for info in db[key][key2]:
-                    rooms_info = info["rooms"]
+                    try:
+                        location = info["locs"][0]["loc"]
+                        rooms_info = info["rooms"]
 
-                    col: wrappers.Collection = mongo.db.rooms
-                    
-                    items = []
-                    for rinfo in rooms_info:
-                        rinfo["region_code"] = location.code
-                        room = Room(**rinfo)
-                        items += [ room.__dict__ ]
-                    
-                    if items:
-                        col.insert_many(items)
+                        col: wrappers.Collection = mongo.db.rooms
+                        
+                        items = []
+                        for rinfo in rooms_info:
+                            rinfo["region_code"] = location["code"]
+                            room = Room(**rinfo)
+                            items += [ room.__dict__ ]
+                        
+                        if items:
+                            col.insert_many(items)
+                    except:
+                        pass
 
     if "security_light" not in collections:
         col: wrappers.Collection = mongo.db.security_light
+        col.ensure_index([("geo", GEOSPHERE)])
         db = json.load(open("./db/security_light.json"))
         items = []
         for item in db["records"]:
@@ -59,6 +65,7 @@ def initialize():
     
     if "cctv" not in collections:
         col: wrappers.Collection = mongo.db.cctv
+        col.ensure_index([("geo", GEOSPHERE)])
         db = json.load(open("./db/cctv.json"))
         items = []
         for item in db["records"]:

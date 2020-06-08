@@ -10,14 +10,14 @@ class SafetyAPI(object):
     def __init__(self):
         pass
 
-    def getGrade(self, level, cctv, security_light):
+    @staticmethod
+    def getGrade(level, cctv, security_light):
         """
         level: kakao map level
         """
         cctv_count = len(cctv)
         sl_count = len(security_light)
         if level == 1:
-            
             pass
         elif level == 2:
             pass
@@ -67,5 +67,5 @@ class SafetyAPI(object):
             }
         }))
 
-        return self.getGrade(7, cctvs, security_lights)
+        return SafetyAPI.getGrade(7, cctvs, security_lights)
     

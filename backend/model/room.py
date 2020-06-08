@@ -9,6 +9,10 @@ class Room(object):
         self.title                  = kwargs["title"]
         self.room_type              = kwargs["room_type"]
         self.random_location        = kwargs["random_location"]
+        self.geo                    = {
+            "type": "Point",
+            "coordinates": [ self.random_location[0], self.random_location[1] ]
+        }
         self.complex_name           = kwargs["complex_name"]
         self.premium_badge          = kwargs["premium_badge"]
         self.hash_tags              = kwargs["hash_tags"]

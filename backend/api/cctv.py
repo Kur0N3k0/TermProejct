@@ -1,12 +1,13 @@
 from flask_pymongo import wrappers
 from database import mongo
+from math import *
 
-class securityLightAPI(object):
+class cctvAPI(object):
     def __init__(self):
         pass
 
-    def getLightByLocation(self, longtitude, latitude, circle_range):
-        col: wrappers.Collection = mongo.db.security_light
+    def getCCTVByLocation(self, longtitude, latitude, circle_range):
+        col: wrappers.Collection = mongo.db.cctv
 
         result = list(col.find({
             "geo": {

@@ -14,7 +14,6 @@ def initialize():
     collections = mongo.db.collection_names()
     if "locations" not in collections:
         col: wrappers.Collection = mongo.db.locations
-        col.create_index("code", unique=True)
         col.ensure_index([("geo", GEOSPHERE)])
 
         locations = json.load(open("./db/locations.json"))
@@ -22,6 +21,13 @@ def initialize():
         col: wrappers.Collection = mongo.db.locations
         for location in locations:
             loc = Location(**location)
+            col.insert_one(loc.__dict__)
+        
+        subways = json.load(open("./db/subway.json"))
+        for subway in subways:
+            if not subway:
+                continue
+            loc = Location(**subway)
             col.insert_one(loc.__dict__)
 
     if "rooms" not in collections:

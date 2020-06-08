@@ -7,11 +7,11 @@
     <script>
         let map = undefined;
 
-        let getRooms = (self, code) => {
+        let getRooms = (self) => {
             var pos = $(self).attr("data-position").split(",");
             map.setCenter(new kakao.maps.LatLng(pos[0], pos[1]));
 
-            $.get("/proto/rooms/" + code, (res) => {
+            $.get(`/proto/rooms?latitude=${pos[0]}&longtitude=${pos[1]}`, (res) => {
                 let positions = [];
 
                 let rooms = res["rooms"];
@@ -115,7 +115,7 @@
                         tbody.append(`<tr>
                             <td>${result[i]["full_name"]}</td>
                             <td>
-                                <input type="button" onclick="getRooms(this, ${result[i]["code"]})" data-position="${result[i]["latitude"]},${result[i]["longtitude"]}" value="선택">
+                                <input type="button" onclick="getRooms(this)" data-position="${result[i]["location"][1]},${result[i]["location"][0]}" value="선택">
                             </td>
                         </tr>`);
                     }
@@ -125,7 +125,7 @@
             var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
                 mapOption = { 
                     center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-                    level: 7 // 지도의 확대 레벨
+                    level: 5 // 지도의 확대 레벨
                 };
 
             map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다

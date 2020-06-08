@@ -3,6 +3,7 @@ from flask_pymongo import wrappers
 
 from database import task_redis, mongo
 from api.user import UserAPI
+from api.room import RoomAPI
 from api.cctv import CCTVAPI
 from api.security_light import securityLightAPI
 from api.building import BuildingAPI
@@ -14,6 +15,7 @@ import tasks
 
 router = Blueprint("proto", __name__)
 userapi = UserAPI()
+roomAPI = RoomAPI()
 cctvAPI = CCTVAPI()
 seclightAPI = securityLightAPI()
 buildingAPI = BuildingAPI()
@@ -87,30 +89,27 @@ def searchLocations():
 
     return jsonify(result)
 
-@router.route("/rooms/<region>")
-def searchRooms(region):
-    query = {}
-    col: wrappers.Collection = mongo.db.rooms
+@router.route("/rooms")
+def searchRooms():
+    longtitude = float(request.args.get("longtitude", 0.0))
+    latitude = float(request.args.get("latitude", 0.0))
+    room_range = int(request.args.get("room_range", 1000))
 
-    if region:
-        query["region_code"] = region
-
-    # get rooms in region
-    rooms = list(col.find(query))
-    for item in rooms:
-        del item["_id"]
+    rooms = roomAPI.getRoomsByCoord(longtitude, latitude, room_range)
 
     # get region info
     if not rooms:
-        col: wrappers.Collection = mongo.db.locations
-        loc = col.find_one({ "code": region })
-        del loc["_id"]
-        location = Location(**loc)
-        longtitude = location.location[0]
-        latitude = location.location[1]
-    else:
-        longtitude = rooms[0]["random_location"][0]
-        latitude = rooms[0]["random_location"][1]
+        result = {
+            "rooms": [],
+            "longtitude": longtitude,
+            "latitude": latitude,
+            "security_light": [],
+            "cctv": [],
+        }
+        return result
+
+    longtitude = rooms[0]["random_location"][0]
+    latitude = rooms[0]["random_location"][1]
 
     # get security_light info
     # security_light address: mixed data(new, old...)

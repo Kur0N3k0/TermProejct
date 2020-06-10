@@ -105,6 +105,10 @@
         }
     </style>
     <script>
+        const goRoom = (full_name, longtitude, latitude) => {
+            location=`/proto/room?full_name=${full_name}&longtitude=${longtitude}&latitude=${latitude}`;
+        }
+
         $(() => {
             $("#search").focus(() => {
                 $("#result-box").removeClass("hidden-box");
@@ -115,6 +119,38 @@
             $(".overlay").click(() => {
                 $("#result-box").addClass("hidden-box");
                 $(".overlay").addClass("hidden-box");
+            });
+            $(".result-box-line").click(() => {
+                $(this).attr("data-position");
+            });
+
+            $("#search").keyup((e) => {
+                let region = $("#search").val();
+                $.get(`/proto/search?region=${region}`, (res) => {
+                    $(".auto-complete-box").empty();
+                    $(".auto-complete-box").append(`
+                    <div class="result-box-header">
+                        <h5>${res.length}건의 검색결과</h5>
+                    </div>
+                    `);
+                    for(var i = 0; i < res.length; i++) {
+                        if(res[i]["type"] == "subway") {
+                            $(".auto-complete-box").append(`
+                            <div class="result-box-line" onclick="goRoom('${res[i]["full_name"]}',${res[i]["location"][0]},${res[i]["location"][1]})">
+                                <i class="fa fa-subway"></i>
+                                <a href="#">${res[i]["full_name"]}</a>
+                            </div>
+                            `);
+                        } else {
+                            $(".auto-complete-box").append(`
+                            <div class="result-box-line" onclick="goRoom('${res[i]["full_name"]}', ${res[i]["location"][0]},${res[i]["location"][1]})">
+                                <i class="fa fa-location-arrow" aria-hidden="true"></i>
+                                <a href="#">${res[i]["full_name"]}</a>
+                            </div>
+                            `);
+                        }
+                    }
+                });
             });
         });
     </script>
@@ -135,8 +171,8 @@
                     <div class="main-searchbox-container">
                         <div class="hidden-box overlay"></div>
                         <div class="main-message">
-                            <h1>고양이는</h1>
-                            <h1>야옹</h1>
+                            <h1>MyFitRoom</h1>
+                            <h1>매물 찾기</h1>
                         </div>
                         <div class="main-searchbox bg-light">
                             <div class="searchbox-group">
@@ -151,7 +187,7 @@
                                     <div class="result-box-header">
                                         <h5>??건의 검색결과</h5>
                                     </div>
-                                    <div class="result-box-line">
+                                    <div class="result-box-line" data-position="">
                                         <i class="fa fa-subway"></i>
                                         <a href="#">검색결과 1</a>
                                     </div>

@@ -8,6 +8,7 @@ from model.security_light import SecurityLight
 from model.cctv import CCTV
 
 task_redis = redis.StrictRedis(host='localhost', port=6379, db=2)
+search_redis = redis.StrictRedis(host='localhost', port=6379, db=3)
 mongo = PyMongo()
 
 def initialize():

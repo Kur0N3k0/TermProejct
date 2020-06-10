@@ -21,3 +21,23 @@ class RoomAPI(object):
         }))
 
         return result
+
+    def getRoomsByCoordAndCond(self, cond, longtitude, latitude, circle_range):
+        col: wrappers.Collection = mongo.db.rooms
+
+        query = {
+            "geo": {
+                "$near": {
+                    "$maxDistance": circle_range,
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [ longtitude, latitude ]
+                    }
+                }
+            }
+        }
+        query.update(cond)
+
+        result = list(col.find(query))
+
+        return result

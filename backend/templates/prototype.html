@@ -1,107 +1,104 @@
 <html>
     <head>
         <title>Prototype - MyFitRoom</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c39e48badc987091b1abf44a085651e"></script>
     </head>
     <script>
         let map = undefined;
+        let marker_item = {
+            room: [],
+            cctv: [],
+            seclight: []
+        };
 
-        let getRooms = (self) => {
-            var pos = $(self).attr("data-position").split(",");
+        let getRoomsCoord = (latitude, longtitude) => {
+            let pos = [ latitude, longtitude ];
             map.setCenter(new kakao.maps.LatLng(pos[0], pos[1]));
 
             $.get(`/proto/rooms?latitude=${pos[0]}&longtitude=${pos[1]}`, (res) => {
                 let positions = [];
 
                 let rooms = res["rooms"];
-                let oneroom = $("#oneroom");
+                console.log(res);
+                let oneroom = $(".result-items");
                 oneroom.empty();
                 for(var i = 0; i< rooms.length; i++) {
                     var title = rooms[i]["title"];
                     var type = rooms[i]["room_type_str"];
                     var price = rooms[i]["price_title"];
+                    var img = rooms[i]["img_url"];
+
                     oneroom.append(`
-                    <div id="oneroom-item">
-                        <p id="oneroom-title">${title}</p>
-                        <p id="oneroom-type">${type}</p>
-                        <p id="oneroom-price">${price}</p>
+                    <div class="result-item">
+                        <div class="card" style="width: 18rem;">
+                            <img class="card-img-top" src="${img}" alt="Card image cap">
+                            <div class="card-body">
+                                <h5 class="card-title">${price}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">${title}</h6>
+                                <p class="card-text">${type}</p>
+                            </div>
+                        </div>
                     </div>
                     `);
                 }
 
-                
                 let security_lights = res["security_light"];
-                let security_light = $("#security_light");
                 for(var i = 0; i < security_lights.length; i++) {
                     var name = security_lights[i]["location_name"];
                     var addr = security_lights[i]["address"];
                     
-                    security_light.append(`
-                    <div id="security_light-item">
-                        <p id="security_light-name">${name}</p>
-                        <p id="security_light-addr">${addr}</p>
-                    </div>
-                    `);
                     positions.push( {
                         title: name, 
                         latlng: new kakao.maps.LatLng(security_lights[i]["latitude"], security_lights[i]["longtitude"])
                     });
                 }
 
-                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png"; 
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png";
                 for (var i = 0; i < positions.length; i ++) {
-                    
-                    // 마커 이미지의 이미지 크기 입니다
                     var imageSize = new kakao.maps.Size(24, 35); 
-                    
-                    // 마커 이미지를 생성합니다    
                     var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); 
-                    
-                    // 마커를 생성합니다
                     var marker = new kakao.maps.Marker({
                         map: map, // 마커를 표시할 지도
                         position: positions[i].latlng, // 마커를 표시할 위치
                         title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
                         image : markerImage // 마커 이미지 
                     });
+                    marker_item["seclight"].push(marker);
                 }
 
                 positions = [];
                 let cctvs = res["cctv"];
-                let cctv = $("#cctv");
                 for(var i = 0; i < cctvs.length; i++) {
                     var addr = cctvs[i]["address"];
                     
-                    cctv.append(`
-                    <div id="cctv-item">
-                        <p id="cctv-addr">${addr}</p>
-                    </div>
-                    `);
                     positions.push( {
                         title: name, 
                         latlng: new kakao.maps.LatLng(cctvs[i]["latitude"], cctvs[i]["longtitude"])
                     });
                 }
 
-                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"; 
+                var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png";
                 for (var i = 0; i < positions.length; i ++) {
-                    
-                    // 마커 이미지의 이미지 크기 입니다
-                    var imageSize = new kakao.maps.Size(24, 35); 
-                    
-                    // 마커 이미지를 생성합니다    
+                    var imageSize = new kakao.maps.Size(24, 35);
                     var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); 
-                    
-                    // 마커를 생성합니다
                     var marker = new kakao.maps.Marker({
                         map: map, // 마커를 표시할 지도
                         position: positions[i].latlng, // 마커를 표시할 위치
                         title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
                         image : markerImage // 마커 이미지 
                     });
+                    marker_item.cctv.push(marker);
                 }
             });
+        }
+
+        let getRooms = (self) => {
+            var pos = $(self).attr("data-position").split(",");
+            getRoomsCoord(pos[0], pos[1]);
         };
 
         $(() => {
@@ -122,16 +119,138 @@
                 });
             });
 
+            $("#seclight-checkbox").click(() => {
+                if($("#seclight-checkbox").is(":checked")) {
+                    for(var i = 0; i < marker_item.seclight.length; i++) {
+                        marker_item.seclight[i].setMap(map);
+                    }
+                } else {
+                    for(var i = 0; i < marker_item.cctv.length; i++) {
+                        marker_item.seclight[i].setMap(null);
+                    }
+                }
+            });
+
+            $("#cctv-checkbox").click(() => {
+                if($("#cctv-checkbox").is(":checked")) {
+                    for(var i = 0; i < marker_item.cctv.length; i++) {
+                        marker_item.cctv[i].setMap(map);
+                    }
+                } else {
+                    for(var i = 0; i < marker_item.cctv.length; i++) {
+                        marker_item.cctv[i].setMap(null);
+                    }
+                }
+            });
+
             var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
                 mapOption = { 
-                    center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-                    level: 5 // 지도의 확대 레벨
+                    center: new kakao.maps.LatLng({{ keyword["latitude"] }}, {{ keyword["longtitude"] }}), // 지도의 중심좌표
+                    level: 3 // 지도의 확대 레벨
                 };
 
             map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+            getRoomsCoord({{ keyword["latitude"] }}, {{ keyword["longtitude"] }});
         });
     </script>
+    <style>
+        .content-box {
+            
+        }
+        .content-box .row { 
+            height: 100%;
+        }
+        #region {
+            width: auto;
+            display: inline-block;
+        }
+        .search-result {
+            overflow-y: scroll;
+            height: 100%;
+        }
+        .search-result::-webkit-scrollbar {
+            display: none;
+        }
+        .result-title {
+            margin-top: 10px;
+            border-bottom: 1px solid #000000;
+        }
+        .result-title h2 {
+            margin-left: 15px;
+        }
+        .result-item {
+            display: inline-block;
+            margin-top: 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        .result-items {
+            margin: auto;
+            width: 94%;
+        }
+        .result-footer {
+            width: 100%;
+            height: 20px;
+        }
+        .card {
+            margin-top: 10px;
+        }
+    </style>
     <body>
+        <div class="top-container">
+            <header>
+                <nav class="navbar navbar-light border-bottom">
+                    <a class="navbar-brand" href="#">
+                        <img src="" width="30" height="30" class="d-inline-block align-top" alt="">
+                        MyFitRoom
+                    </a>
+                </nav>
+            </header>
+            <section>
+                <div class="content-box">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-sm-6" style="padding: 0px; background-color: white;">
+                                <nav class="navbar navbar-light border-bottom" style="background-color: white;">
+                                    <div class="search-box">
+                                        <input type="text" class="form-control" id="region" placeholder="지역명/지하철명을 입력해주세요" style="width: 230px;" value="{{ keyword["full_name"] }}" autocomplete="off">
+                                        <span class="input-group-btn">
+                                            <button type="button" id="search-btn" class="btn btn-outline-primary" style="margin-top: -3px;">검색</button>
+                                            <button type="button" class="btn btn-outline-primary" style="margin-top: -3px;">검색조건</button>
+                                            <div class="form-check" style="display: inline-block;">
+                                                <input type="checkbox" class="form-check-input" id="seclight-checkbox" checked>
+                                                <label class="form-check-label" for="seclight-checkbox">보안등</label>
+                                            </div>
+                                            <div class="form-check" style="display: inline-block;">
+                                                <input type="checkbox" class="form-check-input" id="cctv-checkbox" checked>
+                                                <label class="form-check-label" for="cctv-checkbox">CCTV</label>
+                                            </div>
+                                        </span>
+                                        <!-- filter hidden layout -->
+                                    </div>
+                                </nav>
+                                <!-- search result -->
+                                <div class="search-result">
+                                    <div class="result-title">
+                                        <h2>검색결과</h2>
+                                    </div>
+                                    <div class="result-items">
+                                        
+                                    </div>
+                                    <div class="result-footer"></div>
+                                </div>
+                            </div>
+                            <div class="col-sm-6" style="padding-right: 0px; padding-left: 0px;">
+                                <!-- kakao map -->
+                                <div id="map" style="width:100%;height:100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!--
         <input type="button" onclick="location='#search'" value="검색">
         <input type="button" onclick="location='#search-result'" value="검색결과">
 
@@ -157,7 +276,7 @@
             </table>
         </div>
         <h2>지도</h2>
-        <div id="map" style="width:500px;height:400px;"></div>
+        
         <h2>원룸 정보</h2>
         <div id="oneroom">
             <div id="oneroom-item">
@@ -179,5 +298,6 @@
                 <p id="cctv-addr"></p>
             </div>
         </div>
+        -->
     </body>
 </html>

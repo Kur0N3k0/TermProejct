@@ -1,21 +1,23 @@
 from flask import Flask, url_for, request, session, render_template, redirect, Blueprint, jsonify
 from flask_pymongo import wrappers
 
-from database import task_redis, mongo
+from database import task_redis, search_redis, mongo
 from api.user import UserAPI
 from api.room import RoomAPI
+from api.location import LocationAPI
 from api.cctv import CCTVAPI
 from api.security_light import securityLightAPI
 from api.building import BuildingAPI
 from model.location import Location
 
-import uuid, json
+import uuid, json, hashlib
 import pymongo
 import tasks
 
 router = Blueprint("proto", __name__)
 userapi = UserAPI()
 roomAPI = RoomAPI()
+locationAPI = LocationAPI()
 cctvAPI = CCTVAPI()
 seclightAPI = securityLightAPI()
 buildingAPI = BuildingAPI()
@@ -87,15 +89,44 @@ def searchLocations():
     for item in result:
         del item["_id"]
 
-    return jsonify(result)
+    return jsonify(result[:20])
+
+@router.route("/room")
+def searchRoom():
+    full_name = request.args.get("full_name", "")
+    longtitude = float(request.args.get("longtitude", 126.570667))
+    latitude = float(request.args.get("latitude", 33.450701))
+    room_range = int(request.args.get("room_range", 1000))
+
+    return render_template("/prototype.html", keyword={
+        "full_name": full_name,
+        "longtitude": longtitude,
+        "latitude": latitude,
+        "room_range": room_range,
+    })
 
 @router.route("/rooms")
 def searchRooms():
-    longtitude = float(request.args.get("longtitude", 0.0))
-    latitude = float(request.args.get("latitude", 0.0))
+    longtitude = float(request.args.get("longtitude", 126.570667))
+    latitude = float(request.args.get("latitude", 33.450701))
     room_range = int(request.args.get("room_range", 1000))
+    rtype = request.args.get("room_type", "")
 
-    rooms = roomAPI.getRoomsByCoord(longtitude, latitude, room_range)
+    key = str(longtitude) + str(latitude) + str(room_range) + rtype
+    cache_key = hashlib.sha1(key.encode()).hexdigest()
+
+    result = search_redis.get(cache_key)
+    if result:
+        return jsonify(json.loads(result))
+
+    if rtype:
+        cond = { "room_type_str": rtype }
+        rooms = roomAPI.getRoomsByCoordAndCond(cond, longtitude, latitude, room_range)
+    else:
+        rooms = roomAPI.getRoomsByCoord(longtitude, latitude, room_range)
+
+    for room in rooms:
+        del room["_id"]
 
     # get region info
     if not rooms:
@@ -111,19 +142,56 @@ def searchRooms():
     longtitude = rooms[0]["random_location"][0]
     latitude = rooms[0]["random_location"][1]
 
+    # filter check
+    CCTV, SECLIGHT, SUBWAY, BUILDING = 0, 1, 2, 3
+    search_filter = [ False for _ in range(4) ]
+    if request.args.get("cctv", None):
+        search_filter[CCTV] = True
+    if request.args.get("seclight", None):
+        search_filter[SECLIGHT] = True
+    if request.args.get("subway", None):
+        search_filter[SUBWAY] = True
+    if request.args.get("building", None):
+        search_filter[BUILDING] = True
+
+    seclight_range = int(request.args.get("seclight_range", 300))
+    cctv_range = int(request.args.get("cctv_range", 300))
+    subway_range = int(request.args.get("subway_range", 300))
+    building_range = int(request.args.get("building_range", 300)) / 1000
+    bfilter = request.args.get("bfilter", "")
+    bfilter = bfilter.split(",")
+
+    # filter
+    if search_filter.count(True):
+        for room in rooms:
+            count = 0
+            if search_filter[SECLIGHT]:
+                count += len(seclightAPI.getLightByLocation(room.random_location[0], room.random_location[1], seclight_range))
+            if search_filter[CCTV]:
+                count += len(cctvAPI.getCCTVByLocation(room.random_location[0], room.random_location[1], cctv_range))
+            if search_filter[SUBWAY]:
+                count += len(locationAPI.getLocationsByCoord("subway", room.random_location[0], room.random_location[1], subway_range))
+            if search_filter[BUILDING]:
+                count += len(buildingAPI.getBuildings(longtitude, latitude, building_range, 100, bfilter))
+            room["counting"] = count
+        return jsonify({ "rooms": rooms })
+
     # get security_light info
     # security_light address: mixed data(new, old...)
-    seclight_range = int(request.args.get("seclight_range", 300))
     security_lights = seclightAPI.getLightByLocation(longtitude, latitude, seclight_range)
     for security_light in security_lights:
         del security_light["_id"]
 
     # get cctv info
     # cctv address: mixed data(new, old...)
-    cctv_range = int(request.args.get("cctv_range", 300))
     cctvs = cctvAPI.getCCTVByLocation(longtitude, latitude, cctv_range)
     for cctv in cctvs:
         del cctv["_id"]
+
+    # get subway info
+    subways = locationAPI.getLocationsByCoord("subway", longtitude, latitude, subway_range)
+    for subway in subways:
+        del subway["_id"]
 
     result = {
         "rooms": rooms,
@@ -132,6 +200,9 @@ def searchRooms():
         "security_light": security_lights,
         "cctv": cctvs,
     }
+
+    value = json.dumps(result)
+    search_redis.set(cache_key, value, ex=3600 * 24)
 
     return jsonify(result)
 

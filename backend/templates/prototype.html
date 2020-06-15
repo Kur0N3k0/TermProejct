@@ -295,6 +295,26 @@
                         return;
                     }
 
+                    // sorting
+                    for(var i = 0; i < rooms.length; i++) {
+                        var counts = 0;
+                        for(var key in rooms[i]["count"]) {
+                            counts += rooms[i]["count"][key];
+                        }
+                        rooms[i]["counts"] = counts;
+                    }
+
+                    for(var i = 0; i < rooms.length - 1; i++) {
+                        for(var k = i + 1; k < rooms.length; k++) {
+                            if(rooms[i]["counts"] < rooms[k]["counts"]) {
+                                // swap
+                                var tmp = rooms[i];
+                                rooms[i] = rooms[k];
+                                rooms[k] = tmp;
+                            }
+                        }
+                    }
+
                     for(var i = 0; i< rooms.length; i++) {
                         var title = rooms[i]["title"];
                         var type = rooms[i]["room_type_str"];

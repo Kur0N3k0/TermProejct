@@ -319,8 +319,18 @@
             });
 
             $(".compare-title").click(() => {
-                $(".compare-items").addClass("hidden-box");
+                if($(".compare-items").hasClass("hidden-box"))
+                    $(".compare-items").removeClass("hidden-box");
+                else
+                    $(".compare-items").addClass("hidden-box");
             });
+
+            $(".result-title").click(() => {
+                if($(".result-items").hasClass("hidden-box"))
+                    $(".result-items").removeClass("hidden-box");
+                else
+                    $(".result-items").addClass("hidden-box");
+            })
 
             $("#seclight-checkbox").click(() => {
                 if($("#seclight-checkbox").is(":checked")) {

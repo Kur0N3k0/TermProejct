@@ -5,25 +5,84 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
         <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/bootstrap-slider.min.js"></script>
         <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=7c39e48badc987091b1abf44a085651e"></script>
     </head>
     <script>
         let map = undefined;
+        let rooms = undefined;
         let marker_item = {
             room: [],
             cctv: [],
             seclight: []
         };
+        let infowindow_item = { room: [] }
+        let bfitler = undefined;
+
+        let seqs = [];
+        let appendRoom = (seq) => {
+            $(`#room-${seq} > .card`).css("border", "2px solid #000000");
+            if(seqs.length != 0 && seqs.indexOf(seq) !== -1) {
+                seqs = seqs.filter(v => v != seq);
+                $(`#room-${seq} > .card`).css("border", "");
+                return;
+            }
+            seqs.push(seq);
+        }
+
+        let setMarker = (imageSrc, positions) => {
+            //var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png";
+            for (var i = 0; i < positions.length; i ++) {
+                let imageSize = new kakao.maps.Size(24, 35);
+                let markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize);
+                let marker = new kakao.maps.Marker({
+                    map: map,
+                    position: positions[i].latlng,
+                    title : positions[i].title,
+                    image : markerImage,
+                    clickable: true
+                });
+
+                marker_item.room.push(marker);
+
+                let iwContent = `
+                <div style="width: 300px;">
+                    <img src="${positions[i].img}" style="width: 300px;">
+                    <div>${positions[i].title}</div>
+                    <div>${positions[i].price}</div>
+                    <div>${positions[i].type}</div>
+                    <div>
+                        <button type="button" class="btn btn-outline-primary" style="margin-top: -3px;" onclick="appendRoom(${positions[i].seq});">선택</button>
+                    </div>
+                </div>
+                `;
+                let iwRemoveable = true;
+
+                let infowindow = new kakao.maps.InfoWindow({
+                    content : iwContent,
+                    removable : iwRemoveable
+                });
+
+                infowindow_item.room.push(infowindow);
+
+                kakao.maps.event.addListener(marker, 'click', function() {
+                    for(var i in infowindow_item.room)
+                        infowindow_item.room[i].close();
+                    infowindow.open(map, marker);
+                    map.setCenter(marker.getPosition());
+                });
+            } 
+        }
 
         let getRoomsCoord = (latitude, longtitude) => {
             let pos = [ latitude, longtitude ];
             map.setCenter(new kakao.maps.LatLng(pos[0], pos[1]));
 
             $.get(`/proto/rooms?latitude=${pos[0]}&longtitude=${pos[1]}`, (res) => {
-                let positions = [];
+                var positions = [];
 
-                let rooms = res["rooms"];
-                console.log(res);
+                rooms = res["rooms"];
                 let oneroom = $(".result-items");
                 oneroom.empty();
                 for(var i = 0; i< rooms.length; i++) {
@@ -31,9 +90,19 @@
                     var type = rooms[i]["room_type_str"];
                     var price = rooms[i]["price_title"];
                     var img = rooms[i]["img_url"];
+                    var seq = rooms[i]["seq"];
+
+                    positions.push({
+                        seq: seq,
+                        price: price,
+                        img: img,
+                        title: title,
+                        type: type,
+                        latlng: new kakao.maps.LatLng(rooms[i].random_location[1], rooms[i].random_location[0])
+                    });
 
                     oneroom.append(`
-                    <div class="result-item">
+                    <div class="result-item" id="room-${seq}">
                         <div class="card" style="width: 18rem;">
                             <img class="card-img-top" src="${img}" alt="Card image cap">
                             <div class="card-body">
@@ -46,6 +115,9 @@
                     `);
                 }
 
+                setMarker("https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png", positions);
+
+                var positions = [];
                 let security_lights = res["security_light"];
                 for(var i = 0; i < security_lights.length; i++) {
                     var name = security_lights[i]["location_name"];
@@ -62,15 +134,15 @@
                     var imageSize = new kakao.maps.Size(24, 35); 
                     var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); 
                     var marker = new kakao.maps.Marker({
-                        map: map, // 마커를 표시할 지도
+                        //map: map, // 마커를 표시할 지도
                         position: positions[i].latlng, // 마커를 표시할 위치
                         title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
                         image : markerImage // 마커 이미지 
                     });
-                    marker_item["seclight"].push(marker);
+                    marker_item.seclight.push(marker);
                 }
 
-                positions = [];
+                var positions = [];
                 let cctvs = res["cctv"];
                 for(var i = 0; i < cctvs.length; i++) {
                     var addr = cctvs[i]["address"];
@@ -86,7 +158,7 @@
                     var imageSize = new kakao.maps.Size(24, 35);
                     var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); 
                     var marker = new kakao.maps.Marker({
-                        map: map, // 마커를 표시할 지도
+                        //map: map, // 마커를 표시할 지도
                         position: positions[i].latlng, // 마커를 표시할 위치
                         title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
                         image : markerImage // 마커 이미지 
@@ -101,22 +173,153 @@
             getRoomsCoord(pos[0], pos[1]);
         };
 
+        let setKakaoMap = (latitude, longtitude) => {
+            var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+                mapOption = { 
+                    center: new kakao.maps.LatLng(latitude, longtitude), // 지도의 중심좌표
+                    level: 3 // 지도의 확대 레벨
+                };
+
+            map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+        }
+
+        let search = (keyword) => {
+            $.get(`/proto/search?region=${keyword}`, (res) => {
+                a = res;
+                let longtitude = res[0].location[0];
+                let latitude = res[0].location[1];
+                setKakaoMap(latitude, longtitude);
+                getRoomsCoord(latitude, longtitude);
+            });
+        }
+
+        let getBuildingType = () => {
+            $.get("/proto/building/getfilter", (res) => {
+                let building_checkbox = $("#building-checkbox");
+                building_checkbox.empty();
+                for(var key in res) {
+                    building_checkbox.append(`
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                ${key}
+                            </div>
+                        <td>
+                            <select id="${key}-range" style="margin-left: 10px;" >
+                                <option value="0">선택안함</option>
+                                <option value="100">100m</option>
+                                <option value="200">200m</option>
+                                <option value="300">300m</option>
+                            </select>
+                        </td>
+                    </tr>
+                    `);
+                }
+
+                bfilter = res;
+            });
+        }
+
+        let togglefilter = () => {
+            if($(".filter-box").hasClass("hidden-box"))
+                $(".filter-box").removeClass("hidden-box");
+            else
+                $(".filter-box").addClass("hidden-box");
+        }
+
+        let untogglefilter = () => {
+            $(".filter-box").addClass("hidden-box");
+        }
+
+        let dict2param = (dict) => {
+            var result = [];
+            for(var key in dict) 
+                result.push(`${escape(key)}=${escape(dict[key])}`);
+            return result.join("&");
+        }
+
         $(() => {
             $("#search-btn").click(() => {
                 let region = $("#region").val();
-                $.get("/proto/search?region=" + region, (res) => {
-                    let result = res;
-                    let tbody = $("#search-result table > tbody");
-                    tbody.empty();
-                    for(var i = 0; i < result.length; i++){
-                        tbody.append(`<tr>
-                            <td>${result[i]["full_name"]}</td>
-                            <td>
-                                <input type="button" onclick="getRooms(this)" data-position="${result[i]["location"][1]},${result[i]["location"][0]}" value="선택">
-                            </td>
-                        </tr>`);
+                search(region);
+            });
+
+            $("#filter-btn").click(() => {
+                togglefilter();
+            });
+
+            $("#setfilter-btn").click(() => {
+                togglefilter();
+
+                var param = {};
+                param["rooms"] = seqs.join(",");
+
+                var value = $("#subway-range option:selected").val();
+                if(value != 0) {
+                    param["subway"] = "";
+                    param["subway_range"] = $("#subway-range").val();
+                }
+
+                value = $("#seclight-range option:selected").val();
+                if(value != 0) {
+                    param["seclight"] = "";
+                    param["seclight_range"] = $("#seclight-range").val();
+                }
+
+                value = $("#cctv-range option:selected").val();
+                if(value != 0) {
+                    param["cctv"] = "";
+                    param["cctv_range"] = $("#cctv-range").val();
+                }
+
+                param["bfilter"] = [];
+                for(var key in bfilter) {
+                    value = $(`#${key}-range option:selected`).val();
+                    if(value != 0) {
+                        param["building"] = "";
+                        param["bfilter"].push(bfilter[key].join(","));
+                    }
+                }
+                param["bfilter"] = param["bfilter"].join(",");
+                
+                // set filtering
+                $.get("/proto/rooms/filter?" + dict2param(param), (res) => {
+                    rooms = res["rooms"];
+                    let oneroom = $(".compare-items");
+                    oneroom.empty();
+
+                    $(".compare-items").removeClass("hidden-box");
+
+                    if(rooms.length === 0) {
+                        oneroom.html("<b>비교할 수 없습니다.</b>");
+                        return;
+                    }
+
+                    for(var i = 0; i< rooms.length; i++) {
+                        var title = rooms[i]["title"];
+                        var type = rooms[i]["room_type_str"];
+                        var price = rooms[i]["price_title"];
+                        var img = rooms[i]["img_url"];
+                        var seq = rooms[i]["seq"];
+
+                        oneroom.append(`
+                        <div class="result-item" id="room-${seq}">
+                            <div class="card" style="width: 18rem;">
+                                <img class="card-img-top" src="${img}" alt="Card image cap">
+                                <div class="card-body">
+                                    <h5 class="card-title">${price}</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">${title}</h6>
+                                    <p class="card-text">${type}</p>
+                                </div>
+                            </div>
+                        </div>
+                        `);
                     }
                 });
+            });
+
+            $(".compare-title").click(() => {
+                $(".compare-items").addClass("hidden-box");
             });
 
             $("#seclight-checkbox").click(() => {
@@ -125,7 +328,7 @@
                         marker_item.seclight[i].setMap(map);
                     }
                 } else {
-                    for(var i = 0; i < marker_item.cctv.length; i++) {
+                    for(var i = 0; i < marker_item.seclight.length; i++) {
                         marker_item.seclight[i].setMap(null);
                     }
                 }
@@ -142,16 +345,11 @@
                     }
                 }
             });
-
-            var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
-                mapOption = { 
-                    center: new kakao.maps.LatLng({{ keyword["latitude"] }}, {{ keyword["longtitude"] }}), // 지도의 중심좌표
-                    level: 3 // 지도의 확대 레벨
-                };
-
-            map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
-
-            getRoomsCoord({{ keyword["latitude"] }}, {{ keyword["longtitude"] }});
+            
+            let keyword = "{{ keyword['full_name'] }}";
+            if(keyword.length != 0)
+                search(keyword);
+            getBuildingType();
         });
     </script>
     <style>
@@ -171,6 +369,13 @@
         }
         .search-result::-webkit-scrollbar {
             display: none;
+        }
+        .compare-title {
+            margin-top: 10px;
+            border-bottom: 1px solid #000000;
+        }
+        .compare-title h2 {
+            margin-left: 15px;
         }
         .result-title {
             margin-top: 10px;
@@ -196,12 +401,34 @@
         .card {
             margin-top: 10px;
         }
+        .filter-box {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            z-index: 10;
+            margin-top: 10px;
+            margin-left: 297px;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0px 3px 5px 0px;
+            overflow-y: scroll;
+        }
+        .filter-box::-webkit-scrollbar {
+            display: none;
+        }
+        .compare-items {
+            margin: auto;
+            width: 94%;
+        }
+        .hidden-box {
+            display: none;
+        }
     </style>
     <body>
         <div class="top-container">
             <header>
                 <nav class="navbar navbar-light border-bottom">
-                    <a class="navbar-brand" href="#">
+                    <a class="navbar-brand" href="/">
                         <img src="" width="30" height="30" class="d-inline-block align-top" alt="">
                         MyFitRoom
                     </a>
@@ -217,19 +444,68 @@
                                         <input type="text" class="form-control" id="region" placeholder="지역명/지하철명을 입력해주세요" style="width: 230px;" value="{{ keyword["full_name"] }}" autocomplete="off">
                                         <span class="input-group-btn">
                                             <button type="button" id="search-btn" class="btn btn-outline-primary" style="margin-top: -3px;">검색</button>
-                                            <button type="button" class="btn btn-outline-primary" style="margin-top: -3px;">검색조건</button>
+                                            <button type="button" id="filter-btn" class="btn btn-outline-primary" style="margin-top: -3px;">비교하기</button>
                                             <div class="form-check" style="display: inline-block;">
-                                                <input type="checkbox" class="form-check-input" id="seclight-checkbox" checked>
+                                                <input type="checkbox" class="form-check-input" id="seclight-checkbox">
                                                 <label class="form-check-label" for="seclight-checkbox">보안등</label>
                                             </div>
                                             <div class="form-check" style="display: inline-block;">
-                                                <input type="checkbox" class="form-check-input" id="cctv-checkbox" checked>
+                                                <input type="checkbox" class="form-check-input" id="cctv-checkbox">
                                                 <label class="form-check-label" for="cctv-checkbox">CCTV</label>
                                             </div>
                                         </span>
                                         <!-- filter hidden layout -->
+                                        <div class="filter-box hidden-box">
+                                            <h6 style="padding: 10px; padding-bottom: 0px;">
+                                                <b>주변역</b>
+                                            </h6>
+                                            <select id="subway-range" style="margin-left: 10px;">
+                                                <option value="0">선택안함</option>
+                                                <option value="100">100m</option>
+                                                <option value="200">200m</option>
+                                                <option value="300">300m</option>
+                                            </select>
+                                            <h6 style="padding: 10px; padding-bottom: 0px;">
+                                                <b>보안등</b>
+                                            </h6>
+                                            <select id="seclight-range" style="margin-left: 10px;">
+                                                <option value="0">선택안함</option>
+                                                <option value="100">100m</option>
+                                                <option value="200">200m</option>
+                                                <option value="300">300m</option>
+                                            </select>
+                                            <hr>
+                                            <h6 style="padding: 10px; padding-bottom: 0px;">
+                                                <b>CCTV</b>
+                                            </h6>
+                                            <select id="cctv-range" style="margin-left: 10px;">
+                                                <option value="0">선택안함</option>
+                                                <option value="100">100m</option>
+                                                <option value="200">200m</option>
+                                                <option value="300">300m</option>
+                                            </select>
+                                            <hr>
+                                            <h6 style="padding: 10px; padding-bottom: 0px;">
+                                                <b>주변상가</b>
+                                            </h6>
+                                            <hr>
+                                            <table id="building-checkbox" style="margin-left: 10px;">
+                                                
+                                            </table>
+                                            <div style="text-align: center;">
+                                                <button type="button" id="setfilter-btn" class="btn btn-outline-primary btn-sm">적용</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </nav>
+                                <div class="compare-result">
+                                    <div class="compare-title">
+                                        <h2>매물 비교</h2>
+                                    </div>
+                                    <div class="compare-items hidden-box">
+
+                                    </div>
+                                </div>
                                 <!-- search result -->
                                 <div class="search-result">
                                     <div class="result-title">
@@ -250,54 +526,5 @@
                 </div>
             </section>
         </div>
-        <!--
-        <input type="button" onclick="location='#search'" value="검색">
-        <input type="button" onclick="location='#search-result'" value="검색결과">
-
-        <h2>검색</h2>
-        <div id="search">
-            <label for="region">검색: </label>
-            <input type="text" id="region" name="region">
-            <input type="hidden" name="subway">
-            <input type="button" id="search-btn" value="검색">
-        </div>
-        <h2>검색 결과</h2>
-        <div id="search-result">
-            <table border="1">
-                <thead>
-                    <tr>
-                        <td>주소</td>
-                        <td></td>
-                    </tr>
-                </thead>
-                <tbody>
-                    
-                </tbody>
-            </table>
-        </div>
-        <h2>지도</h2>
-        
-        <h2>원룸 정보</h2>
-        <div id="oneroom">
-            <div id="oneroom-item">
-                <p id="oneroom-title"></p>
-                <p id="oneroom-type"></p>
-                <p id="oneroom-price"></p>
-            </div>
-        </div>
-        <h2>보안등</h2>
-        <div id="security_light">
-            <div id="security_light-item">
-                <p id="security_light-name"></p>
-                <p id="security_light-addr"></p>
-            </div>
-        </div>
-        <h2>CCTV</h2>
-        <div id="cctv">
-            <div id="cctv-item">
-                <p id="cctv-addr"></p>
-            </div>
-        </div>
-        -->
     </body>
 </html>

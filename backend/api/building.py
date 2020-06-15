@@ -34,6 +34,7 @@ class BuildingAPI(object):
             "resultType": "results"
         }
         result = self.sess.get(self.external_api["WFS"], params=param).text
+        print(result)
         root = ET.fromstring(result)
         gml = "{http://www.opengis.net/gml}"
         nsdl = "{http://openapi.nsdi.go.kr}"

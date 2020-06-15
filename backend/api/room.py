@@ -41,3 +41,13 @@ class RoomAPI(object):
         result = list(col.find(query))
 
         return result
+
+    def getRoomsBySeqs(self, seqs):
+        col: wrappers.Collection = mongo.db.rooms
+
+        query = {
+            "seq": {
+                "$in": seqs
+            }
+        }
+        return list(col.find(query))

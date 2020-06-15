@@ -9,6 +9,7 @@ from api.cctv import CCTVAPI
 from api.security_light import securityLightAPI
 from api.building import BuildingAPI
 from model.location import Location
+from config import Config
 
 import uuid, json, hashlib
 import pymongo
@@ -24,7 +25,12 @@ buildingAPI = BuildingAPI()
 
 @router.route("/")
 def main():
-    return render_template("prototype.html")
+    return render_template("prototype.html", keyword={
+        "full_name": "",
+        "longtitude": 126.570667,
+        "latitude": 33.450701,
+        "room_range": 1000,
+    })
 
 ################################################
 # user
@@ -94,15 +100,9 @@ def searchLocations():
 @router.route("/room")
 def searchRoom():
     full_name = request.args.get("full_name", "")
-    longtitude = float(request.args.get("longtitude", 126.570667))
-    latitude = float(request.args.get("latitude", 33.450701))
-    room_range = int(request.args.get("room_range", 1000))
 
     return render_template("/prototype.html", keyword={
         "full_name": full_name,
-        "longtitude": longtitude,
-        "latitude": latitude,
-        "room_range": room_range,
     })
 
 @router.route("/rooms")
@@ -142,39 +142,10 @@ def searchRooms():
     longtitude = rooms[0]["random_location"][0]
     latitude = rooms[0]["random_location"][1]
 
-    # filter check
-    CCTV, SECLIGHT, SUBWAY, BUILDING = 0, 1, 2, 3
-    search_filter = [ False for _ in range(4) ]
-    if request.args.get("cctv", None):
-        search_filter[CCTV] = True
-    if request.args.get("seclight", None):
-        search_filter[SECLIGHT] = True
-    if request.args.get("subway", None):
-        search_filter[SUBWAY] = True
-    if request.args.get("building", None):
-        search_filter[BUILDING] = True
-
     seclight_range = int(request.args.get("seclight_range", 300))
     cctv_range = int(request.args.get("cctv_range", 300))
     subway_range = int(request.args.get("subway_range", 300))
     building_range = int(request.args.get("building_range", 300)) / 1000
-    bfilter = request.args.get("bfilter", "")
-    bfilter = bfilter.split(",")
-
-    # filter
-    if search_filter.count(True):
-        for room in rooms:
-            count = 0
-            if search_filter[SECLIGHT]:
-                count += len(seclightAPI.getLightByLocation(room.random_location[0], room.random_location[1], seclight_range))
-            if search_filter[CCTV]:
-                count += len(cctvAPI.getCCTVByLocation(room.random_location[0], room.random_location[1], cctv_range))
-            if search_filter[SUBWAY]:
-                count += len(locationAPI.getLocationsByCoord("subway", room.random_location[0], room.random_location[1], subway_range))
-            if search_filter[BUILDING]:
-                count += len(buildingAPI.getBuildings(longtitude, latitude, building_range, 100, bfilter))
-            room["counting"] = count
-        return jsonify({ "rooms": rooms })
 
     # get security_light info
     # security_light address: mixed data(new, old...)
@@ -206,6 +177,57 @@ def searchRooms():
 
     return jsonify(result)
 
+@router.route("/rooms/filter")
+def roomsFilter():
+    room_ids = request.args.get("rooms", None)
+    if not room_ids:
+        return jsonify({ "rooms": [] })
+    
+    room_ids = list(map(int, set(room_ids.split(","))))
+    rooms = roomAPI.getRoomsBySeqs(room_ids)
+    for room in rooms:
+        del room["_id"]
+
+    # filter check
+    CCTV, SECLIGHT, SUBWAY, BUILDING = 0, 1, 2, 3
+    search_filter = [ False for _ in range(4) ]
+    if request.args.get("cctv", None) != None:
+        search_filter[CCTV] = True
+    if request.args.get("seclight", None) != None:
+        search_filter[SECLIGHT] = True
+    if request.args.get("subway", None) != None:
+        search_filter[SUBWAY] = True
+    if request.args.get("building", None) != None:
+        search_filter[BUILDING] = True
+    
+    seclight_range = int(request.args.get("seclight_range", 300))
+    cctv_range = int(request.args.get("cctv_range", 300))
+    subway_range = int(request.args.get("subway_range", 300))
+    building_range = int(request.args.get("building_range", 300)) / 1000
+    bfilter = request.args.get("bfilter", "")
+    bfilter = bfilter.split(",")
+
+    # filter
+    if search_filter.count(True):
+        for room in rooms:
+            room["count"] = {
+                "seclight": 0,
+                "cctv": 0,
+                "subway": 0,
+                "building": 0
+            }
+            if search_filter[SECLIGHT]:
+                room["count"]["seclight"] = len(seclightAPI.getLightByLocation(room["random_location"][0], room["random_location"][1], seclight_range))
+            if search_filter[CCTV]:
+                room["count"]["cctv"] = len(cctvAPI.getCCTVByLocation(room["random_location"][0], room["random_location"][1], cctv_range))
+            if search_filter[SUBWAY]:
+                room["count"]["subway"] = len(locationAPI.getLocationsByCoord("subway", room["random_location"][0], room["random_location"][1], subway_range))
+            if search_filter[BUILDING]:
+                room["count"]["building"] = len(buildingAPI.getBuildings(room["random_location"][0], room["random_location"][1], building_range, 100, bfilter))
+        return jsonify({ "rooms": rooms })
+
+    return jsonify({ "rooms": [] })
+
 @router.route("/room/pick/<roomid>")
 def roomPick(roomid):
     col: wrappers.Collection = mongo.db.rooms
@@ -231,6 +253,10 @@ def building():
 def building_detail(pnu):
     detail = buildingAPI.getDetail(pnu)
     return jsonify(detail)
+
+@router.route("/building/getfilter")
+def building_config():
+    return jsonify(Config.get("Building")["filter"])
 
 ################################################
 # Celery front task...

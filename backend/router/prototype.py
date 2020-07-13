@@ -35,45 +35,53 @@ def main():
 ################################################
 # user
 ################################################
-@router.route("/signin")
+@router.route("/signin", methods=["GET", "POST"])
 def signin():
-    username, password = request.form["username"], request.form["password"]
-    user = userapi.signin(username, password)
-    if not user:
-        return "user not found"
-    session["userinfo"] = user
-    return "signin"
+    if request.method == "POST":
+        username, password = request.form["username"], request.form["password"]
+        user = userapi.signin(username, password)
+        if not user:
+            return jsonify({"error": 1})
+        session["userinfo"] = user
+        return jsonify({})
+    return render_template("signin.html")
 
-@router.route("/signin/roomuser")
+@router.route("/signin/roomuser", methods=["GET", "POST"])
 def signin_roomuser():
-    username, password = request.form["username"], request.form["password"]
-    user = userapi.signin_roomuser(username, password)
-    if not user:
-        return "user not found"
-    session["userinfo"] = user
-    return "signin"
+    if request.method == "POST":
+        username, password = request.form["username"], request.form["password"]
+        user = userapi.signin_roomuser(username, password)
+        if not user:
+            return jsonify({"error": 1})
+        session["userinfo"] = user
+        return jsonify({})
+    return render_template("ru_signin.html")
     
 @router.route("/logout")
 def logout():
     session.clear()
-    return "bye"
+    return jsonify({})
 
-@router.route("/signup")
+@router.route("/signup", methods=["GET", "POST"])
 def signup():
-    username, password = request.form["username"], request.form["password"]
-    if not userapi.signup(username, password):
-        return "signup failed"
-    return "signup"
+    if request.method == "POST":
+        username, password = request.form["username"], request.form["password"]
+        if not userapi.signup(username, password):
+            return jsonify({"error": 1})
+        return jsonify({})
+    return render_template("signup.html")
 
-@router.route("/signup/roomuser")
+@router.route("/signup/roomuser", methods=["GET", "POST"])
 def signup_roomuser():
-    username, password = request.form["username"], request.form["password"]
-    name = request.form["name"]
-    email = request.form["email"]
-    phone = request.form["phone"]
-    if not userapi.signup_roomuser(username, password, name, email, phone):
-        return "signup failed"
-    return "signup"
+    if request.methods == "POST":
+        username, password = request.form["username"], request.form["password"]
+        name = request.form["name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        if not userapi.signup_roomuser(username, password, name, email, phone):
+            return jsonify({"error": 1})
+        return jsonify({})
+    return render_template("ru_signup.html")
 
 ################################################
 # search location & room

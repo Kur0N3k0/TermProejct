@@ -73,7 +73,7 @@ def signup():
 
 @router.route("/signup/roomuser", methods=["GET", "POST"])
 def signup_roomuser():
-    if request.methods == "POST":
+    if request.method == "POST":
         username, password = request.form["username"], request.form["password"]
         name = request.form["name"]
         email = request.form["email"]
@@ -236,14 +236,39 @@ def roomsFilter():
 
     return jsonify({ "rooms": [] })
 
-@router.route("/room/pick/<roomid>")
-def roomPick(roomid):
-    col: wrappers.Collection = mongo.db.rooms
-    query = {}
-    query["id"] = roomid
-    result = col.find_one(col)
-    del result["_id"]
-    return jsonify(result)
+@router.route("/room/create")
+def roomCreate():
+    if request.method == "POST":
+        room = Room.from_request(request.form)
+        roomAPI.createRoom(room)
+        return jsonify({ "status": True })
+    
+    return render_template("roomcreate.html")
+
+@router.route("/room/list")
+def roomList():
+    return ""
+
+@router.route("/room/<int:seq>")
+def roomDetail(seq):
+    result = roomAPI.getRoomDetail(seq)
+    if not result:
+        result = None
+    return render_template("/roomdetail.html", room=result)
+
+@router.route("/room/update")
+def roomUpdate():
+    if request.method == "POST":
+        room = Room.from_request(request.form)
+        roomAPI.updateRoom(room)
+        return jsonify({ "status": True })
+
+    return render_template("roomupdate.html")
+
+@router.route("/room/delete/<int:seq>")
+def roomDelete(seq):
+    roomAPI.deleteRoom(seq)
+    return jsonify({ "status": True })
 
 @router.route("/building")
 def building():

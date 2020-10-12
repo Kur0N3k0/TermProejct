@@ -1,4 +1,4 @@
-class Room(object):
+class RoomInfo(object):
     def __init__(self, **kwargs):
         self.is_favorited           = kwargs["is_favorited"]
         self.seq                    = kwargs["seq"]

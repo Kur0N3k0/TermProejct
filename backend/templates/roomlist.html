@@ -1,0 +1,74 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <table class="float-right">
+                <tr>
+                    <td>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="location=`/proto/room/create`">등록</button>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="sellDelete()">삭제</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="col-12">
+            <table class="table table-bordered text-center">
+                <colgroup>
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="auto">
+                    <col width="auto">
+                    <col width="10%">
+                    <col width="10%">
+                    <col width="10%">
+                </colgroup>
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col"><input type="checkbox" aria-label="check all" id="checkAll"
+                                onclick="checkAll()">
+                        </th>
+                        <th scope="col">번호</th>
+                        <th scope="col">제목</th>
+                        <th scope="col">매물위치</th>
+                        <th scope="col">보증금</th>
+                        <th scope="col">월세</th>
+                        <th scope="col">등록일자</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
+                        <td>1</td>
+                        <td>가성비 원룸</td>
+                        <td>영남대역</td>
+                        <td>200만원</td>
+                        <td>50만원</td>
+                        <td>2020-04-28</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
+                        <td>2</td>
+                        <td>넓은 원룸</td>
+                        <td>동대구역</td>
+                        <td>100만원</td>
+                        <td>20만원</td>
+                        <td>2020-03-21</td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
+                        <td>3</td>
+                        <td>원룸</td>
+                        <td>동대구역</td>
+                        <td>250만원</td>
+                        <td>30만원</td>
+                        <td>2019-03-21</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -243,11 +243,11 @@ def roomCreate():
         roomAPI.createRoom(room)
         return jsonify({ "status": True })
     
-    return render_template("roomcreate.html")
+    return render_template("/roomcreate.html")
 
 @router.route("/room/list")
 def roomList():
-    return ""
+    return render_template("/roomlist.html")
 
 @router.route("/room/<int:seq>")
 def roomDetail(seq):
@@ -259,7 +259,7 @@ def roomDetail(seq):
 @router.route("/room/update")
 def roomUpdate():
     if request.method == "POST":
-        room = Room.from_request(request.form)
+        room = Room.from_request(request.form, is_update=True)
         roomAPI.updateRoom(room)
         return jsonify({ "status": True })
 

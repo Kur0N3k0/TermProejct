@@ -1,0 +1,264 @@
+{% extends 'layout.html' %}
+{% block content %}
+<style>
+    .carousel-item td {
+        padding: 1.5%;
+    }
+
+    .carousel-item th {
+        width: 30%;
+    }
+
+    .deco-table input[type=text] {
+        width: 100%;
+    }
+</style>
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="false"
+    style="width: 600px; height: 600px; margin: 3% 30%; padding: 3%; background-color: rgb(209, 198, 198); text-align: center;">
+    <h3>매물등록</h3>
+    <form action="/proto/room/create" method="POST">
+        <div class="carousel-inner">
+            <div class="inner-align" style="text-align:left;">
+                <div class="carousel-item active">
+                    <table class="deco-table">
+                        <tr>
+                            <th>제목</th>
+                            <td>
+                                <input type="text" name="title" id="title">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>설명</th>
+                            <td>
+                                <textarea id="room_desc">
+
+                                </textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>방 종류</th>
+                            <td>
+                                <input type="radio" name="RoomKind" value="0" checked=checked>원룸
+                                <input type="radio" name="RoomKind" value="1">투룸
+                                <input type="radio" name="RoomKind" value="2">쓰리룸
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>해시 태그</th>
+                            <td>
+                                <div class="hashtags">
+
+                                </div>
+                                <input type="text" name="hashtag" placeholder="#주차">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>방 사진</th>
+                            <td>
+                                <input type="file" name="RoomArchi" id="RoomArchi" multiple>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>보증금</th>
+                            <td>
+                                <input type="text" name="Deposit" id="Deposit">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>월세</th>
+                            <td>
+                                <input type="text" name="roomMonthlyFee" id="roomMonthlyFee">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>관리비</th>
+                            <td>
+                                <input type="text" name="ServiceFee" id="ServiceFee">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>관리비 포함항목</th>
+                            <td>
+                                <span id="ServiceFeeInclude">
+                                    <input type="checkbox" name="ServiceFeeInclude" value="수도">수도
+                                    <input type="checkbox" name="ServiceFeeInclude" value="TV">TV
+                                    <input type="checkbox" name="ServiceFeeInclude" value="인터넷">인터넷
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>방의 실면적(제곱미터)</th>
+                            <td>
+                                <input type="text" name="squareMeter" id="squareMeter">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>방의 층수</th>
+                            <td>
+                                <input type="text" name="RoomFloor" id="RoomFloor">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>건물의 층수</th>
+                            <td>
+                                <input type="text" name="BuildingFloor" id="BuildingFloor">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>리모델링 날짜</th>
+                            <td>
+                                <input type="text" name="Remodeling" id="Remodeling">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="carousel-item">
+                    <table class="deco-table">
+                        <tr>
+                            <th>주차공간</th>
+                            <td>
+                                <input type="radio" name="Parking" value=True>유
+                                <input type="radio" name="Parking" value=False checked=checked>무
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>엘리베이터</th>
+                            <td>
+                                <input type="radio" name="Elevator" value=True>유
+                                <input type="radio" name="Elevator" value=False checked=checked>무
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>애완동물</th>
+                            <td>
+                                <input type="radio" name="Animal" value=True>유
+                                <input type="radio" name="Animal" value=False checked=checked>무
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>중개사/집주인 연락처</th>
+                            <td>
+                                <input type="text" name="callNumber" id="callNumber">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>방범창</th>
+                            <td>
+                                <input type="radio" name="SecurityWindow" value=True>유
+                                <input type="radio" name="SecurityWindow" value=False checked=checked>무
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>CCTV</th>
+                            <td>
+                                <input type="radio" name="CCTV" value=True>유
+                                <input type="radio" name="CCTV" value=False checked=checked>무
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>도어락</th>
+                            <td>
+                                <input type="radio" name="Doorlock" value=True>유
+                                <input type="radio" name="Doorlock" value=False checked=checked>무
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-light" id="register" style="margin-top:40px;">등록</button>
+    </form>
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev"
+        style="color:black;">
+        <span class="carousel-control-prev-icon" style="color:black" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
+<script>
+    $("#register").click(function () {
+        var RoomArchiFile = $("#RoomArchi").val();
+        var imageURLFile = $("#imageURL").val();
+
+        if ($("#RoomTitle").val().length <= 0) {
+            alert("제목을 입력하세요");
+            $("#RoomTitle").focus();
+            return false;
+        }
+        else if (!RoomArchiFile) {
+            alert("방구조를 첨부하세요");
+            return false;
+        }
+        else if ($("#Deposit").val().length <= 0) {
+            alert("보증금을 입력하세요");
+            $("#Deposit").focus();
+            return false;
+        }
+        else if ($("#roomMonthlyFee").val().length <= 0) {
+            alert("월세를 입력하세요");
+            $("#roomMonthlyFee").focus();
+            return false;
+        }
+        else if ($("#ServiceFee").val().length <= 0) {
+            alert("관리비를 입력하세요");
+            $("#ServiceFee").focus();
+            return false;
+        }
+        else if ($("#Peong").val().length <= 0) {
+            alert("평수를 입력하세요");
+            $("#Peong").focus();
+            return false;
+        }
+        else if ($("#squareMeter").val().length <= 0) {
+            alert("원룸의 실면적을 입력하세요");
+            $("#squareMeter").focus();
+            return false;
+        }
+        else if ($("#RoomFloor").val().length <= 0) {
+            alert("층/건물 층수 를 입력하세요");
+            $("#RoomFloor").focus();
+            return false;
+        }
+        else if (!imageURLFile) {
+            alert("방사진을 첨부하세요");
+            return false;
+        }
+        else if ($("#lat").val().length <= 0) {
+            alert("경도를 입력하세요");
+            $("#lat").focus();
+            return false;
+        }
+        else if ($("#lng").val().length <= 0) {
+            alert("위도를 입력하세요");
+            $("#lng").focus();
+            return false;
+        }
+        else if ($("#callNumber").val().length <= 0) {
+            alert("집주인(중개사)번호 를 입력하세요");
+            $("#callNumber").focus();
+            return false;
+        }
+        else if ($("#Train").val().length <= 0) {
+            alert("인근지하철을 입력하세요");
+            $("#Train").focus();
+            return false;
+        }
+        else if ($("#Lighting").val().length <= 0) {
+            alert("채광을 입력하세요");
+            $("#Lighting").focus();
+            return false;
+        }
+        else if ($("#Remodeling").val().length <= 0) {
+            alert("리모델링 날짜를 입력하세요");
+            $("#Remodeling").focus();
+            return false;
+        }
+        else {
+            $("#register").submit();
+        }
+    })
+</script>
+{% endblock %}

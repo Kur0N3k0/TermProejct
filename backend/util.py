@@ -1,4 +1,4 @@
-import string
+import string, random
 from functools import wraps
 from flask import session, redirect, request
 from flask_pymongo import pymongo, wrappers

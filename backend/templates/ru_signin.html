@@ -38,7 +38,7 @@
 
                     <!-- Submit Button -->
                     <div class="form-group col-lg-12 mx-auto mb-0">
-                        <a href="#" class="btn btn-primary btn-block py-2">
+                        <a href="#" onclick="signin()" class="btn btn-primary btn-block py-2">
                             <span class="font-weight-bold">로그인</span>
                         </a>
                     </div>
@@ -62,6 +62,19 @@
     </div>
 </div>
 <script>
+const signin = () => {
+    let info = {
+        username: $("#username").val(),
+        password: $("#password").val()
+    }
+    $.post("/proto/signin/roomuser", info, (data) => {
+        if(data.hasOwnProperty("error")) {
+            alert("signin fail")
+            return
+        }
+        location = "/"
+    })
+}
 $(function () {
     $('input, select').on('focus', function () {
         $(this).parent().find('.input-group-text').css('border-color', '#80bdff');

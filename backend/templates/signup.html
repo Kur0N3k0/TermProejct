@@ -24,7 +24,7 @@
                                 <i class="fa fa-user text-muted"></i>
                             </span>
                         </div>
-                        <input id="name" type="text" name="name" placeholder="이름" class="form-control bg-white border-left-0 border-md">
+                        <input id="username" type="text" name="name" placeholder="이름" class="form-control bg-white border-left-0 border-md">
                     </div>
 
                     <!-- Password -->
@@ -44,12 +44,12 @@
                                 <i class="fa fa-lock text-muted"></i>
                             </span>
                         </div>
-                        <input id="passwordConfirmation" type="text" name="passwordConfirmation" placeholder="비밀번호 재입력" class="form-control bg-white border-left-0 border-md">
+                        <input id="passwordConfirmation" type="password" name="passwordConfirmation" placeholder="비밀번호 재입력" class="form-control bg-white border-left-0 border-md">
                     </div>
 
                     <!-- Submit Button -->
                     <div class="form-group col-lg-12 mx-auto mb-0">
-                        <a href="#" class="btn btn-primary btn-block py-2">
+                        <a href="#" onclick="signup()" class="btn btn-primary btn-block py-2">
                             <span class="font-weight-bold">가입</span>
                         </a>
                     </div>
@@ -73,6 +73,26 @@
     </div>
 </div>
 <script>
+const signup = () => {
+    let info = {
+        username: $("#username").val(),
+        password: $("#password").val()
+    }
+
+    if($("#passwordConfirmation").val() !== info.password) {
+        alert("비밀번호 불일치")
+        return
+    }
+
+    $.post("/proto/signup", info, (data) => {
+        if(data.hasOwnProperty("error")) {
+            alert("signup fail")
+            return
+        }
+        location = "/"
+    })
+}
+
 $(function () {
     $('input, select').on('focus', function () {
         $(this).parent().find('.input-group-text').css('border-color', '#80bdff');

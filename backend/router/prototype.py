@@ -1,5 +1,6 @@
 from flask import Flask, url_for, request, session, render_template, redirect, Blueprint, jsonify
 from flask_pymongo import wrappers
+from werkzeug.utils import secure_filename
 
 from database import task_redis, search_redis, mongo
 from api.user import UserAPI
@@ -9,9 +10,11 @@ from api.cctv import CCTVAPI
 from api.security_light import securityLightAPI
 from api.building import BuildingAPI
 from model.location import Location
+from model.room_detail import Room
 from config import Config
+from appctx import app
 
-import uuid, json, hashlib
+import uuid, json, hashlib, os, time
 import pymongo
 import tasks
 
@@ -236,7 +239,7 @@ def roomsFilter():
 
     return jsonify({ "rooms": [] })
 
-@router.route("/room/create")
+@router.route("/room/create", methods=["GET", "POST"])
 def roomCreate():
     if request.method == "POST":
         room = Room.from_request(request.form)
@@ -269,6 +272,31 @@ def roomUpdate():
 def roomDelete(seq):
     roomAPI.deleteRoom(seq)
     return jsonify({ "status": True })
+
+@router.route("/room/upload", methods=["POST"])
+def roomUpload():
+    images = request.files.getlist("images[]")
+    ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+    
+    def allowed_file(filename):
+        return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+    result = []
+    for image in images:
+        if image and allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            ext = filename.rsplit(".", 1)[1].lower()
+            filename = hashlib.sha256(str(time.time()).encode() + filename.encode() + b"_saltbae_").hexdigest() + "." + ext
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            result += [ filename ]
+
+    return jsonify({ "result": result })
+
+@router.route("/room/image/delete/<path>")
+def roomImageDelete(path):
+    os.unlink(os.path.join(app.config["UPLOAD_FOLDER"], path))
+    return "deleted"
 
 @router.route("/building")
 def building():

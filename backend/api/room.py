@@ -60,7 +60,10 @@ class RoomAPI(object):
 
     def createRoom(self, detail: Room):
         col: wrappers.Collection = mongo.db.room_detail
-        col.insert_one(detail.to_dict())
+        col.insert_one(detail.__dict__)
+
+        col: wrappers.Collection = mongo.db.rooms
+        col.insert_one(detail.to_parent().__dict__)
     
     def listRoom(self, user_id):
         col: wrappers.Collection = mongo.db.room_detail
@@ -68,8 +71,14 @@ class RoomAPI(object):
 
     def updateRoom(self, seq, detail: Room):
         col: wrappers.Collection = mongo.db.room_detail
-        col.update_one({ "seq": seq }, detail.to_dict())
+        col.update_one({ "seq": seq }, detail.__dict__)
+
+        col: wrappers.Collection = mongo.db.rooms
+        col.update_one({ "seq": seq }, detail.to_parent().__dict__)
     
     def deleteRoom(self, seq):
         col: wrappers.Collection = mongo.db.room_detail
+        col.delete_one({ "seq": seq })
+
+        col: wrappers.Collection = mongo.db.rooms
         col.delete_one({ "seq": seq })

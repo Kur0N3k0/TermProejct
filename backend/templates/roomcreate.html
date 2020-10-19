@@ -1,264 +1,290 @@
 {% extends 'layout.html' %}
 {% block content %}
-<style>
-    .carousel-item td {
-        padding: 1.5%;
-    }
-
-    .carousel-item th {
-        width: 30%;
-    }
-
-    .deco-table input[type=text] {
-        width: 100%;
-    }
-</style>
-<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="false"
-    style="width: 600px; height: 600px; margin: 3% 30%; padding: 3%; background-color: rgb(209, 198, 198); text-align: center;">
+<div class="container">
     <h3>매물등록</h3>
-    <form action="/proto/room/create" method="POST">
-        <div class="carousel-inner">
-            <div class="inner-align" style="text-align:left;">
-                <div class="carousel-item active">
-                    <table class="deco-table">
-                        <tr>
-                            <th>제목</th>
-                            <td>
-                                <input type="text" name="title" id="title">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>설명</th>
-                            <td>
-                                <textarea id="room_desc">
-
-                                </textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>방 종류</th>
-                            <td>
-                                <input type="radio" name="RoomKind" value="0" checked=checked>원룸
-                                <input type="radio" name="RoomKind" value="1">투룸
-                                <input type="radio" name="RoomKind" value="2">쓰리룸
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>해시 태그</th>
-                            <td>
-                                <div class="hashtags">
-
-                                </div>
-                                <input type="text" name="hashtag" placeholder="#주차">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>방 사진</th>
-                            <td>
-                                <input type="file" name="RoomArchi" id="RoomArchi" multiple>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>보증금</th>
-                            <td>
-                                <input type="text" name="Deposit" id="Deposit">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>월세</th>
-                            <td>
-                                <input type="text" name="roomMonthlyFee" id="roomMonthlyFee">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>관리비</th>
-                            <td>
-                                <input type="text" name="ServiceFee" id="ServiceFee">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>관리비 포함항목</th>
-                            <td>
-                                <span id="ServiceFeeInclude">
-                                    <input type="checkbox" name="ServiceFeeInclude" value="수도">수도
-                                    <input type="checkbox" name="ServiceFeeInclude" value="TV">TV
-                                    <input type="checkbox" name="ServiceFeeInclude" value="인터넷">인터넷
-                                </span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>방의 실면적(제곱미터)</th>
-                            <td>
-                                <input type="text" name="squareMeter" id="squareMeter">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>방의 층수</th>
-                            <td>
-                                <input type="text" name="RoomFloor" id="RoomFloor">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>건물의 층수</th>
-                            <td>
-                                <input type="text" name="BuildingFloor" id="BuildingFloor">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>리모델링 날짜</th>
-                            <td>
-                                <input type="text" name="Remodeling" id="Remodeling">
-                            </td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="carousel-item">
-                    <table class="deco-table">
-                        <tr>
-                            <th>주차공간</th>
-                            <td>
-                                <input type="radio" name="Parking" value=True>유
-                                <input type="radio" name="Parking" value=False checked=checked>무
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>엘리베이터</th>
-                            <td>
-                                <input type="radio" name="Elevator" value=True>유
-                                <input type="radio" name="Elevator" value=False checked=checked>무
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>애완동물</th>
-                            <td>
-                                <input type="radio" name="Animal" value=True>유
-                                <input type="radio" name="Animal" value=False checked=checked>무
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>중개사/집주인 연락처</th>
-                            <td>
-                                <input type="text" name="callNumber" id="callNumber">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>방범창</th>
-                            <td>
-                                <input type="radio" name="SecurityWindow" value=True>유
-                                <input type="radio" name="SecurityWindow" value=False checked=checked>무
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>CCTV</th>
-                            <td>
-                                <input type="radio" name="CCTV" value=True>유
-                                <input type="radio" name="CCTV" value=False checked=checked>무
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>도어락</th>
-                            <td>
-                                <input type="radio" name="Doorlock" value=True>유
-                                <input type="radio" name="Doorlock" value=False checked=checked>무
-                            </td>
-                        </tr>
-                    </table>
+    <form action="/proto/room/create" class="border" style="padding: 20px; border-radius: 3px;" method="POST">
+        <div class="form-group row">
+            <label for="title" class="col-sm-2 col-form-label">제목</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="title">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="room_desc" class="col-sm-2 col-form-label">설명</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="room_desc">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="room_type" class="col-sm-2 col-form-label">방 종류</label>
+            <div class="col-sm-10">
+                <select class="form-control" id="room_type">
+                    <option value="0" selected>원룸</option>
+                    <option value="1">투룸</option>
+                    <option value="2">쓰리룸</option>
+                </select>
+            </div>
+        </div>
+        <div class="formgroup row">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10">
+                <div id="map" style="width: 100%; height: 200px; margin-bottom: 15px;"></div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="searchAddrBtn">주소 검색</button>
+                    </div>
+                    <input type="text" class="form-control" id="addr" placeholder="" aria-label="" aria-describedby="basic-addon1">
                 </div>
             </div>
         </div>
-        <button type="submit" class="btn btn-light" id="register" style="margin-top:40px;">등록</button>
+        <div class="form-group row">
+            <label for="hashtag" class="col-sm-2 col-form-label">해시태그</label>
+            <div class="col-sm-10">
+                <div id="hashtag-lists">
+                    
+                </div>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="button" id="addHashtagBtn">추가</button>
+                    </div>
+                    <input type="text" class="form-control" id="hashtag" placeholder="" aria-label="" aria-describedby="basic-addon1">
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="room_imgs" class="col-sm-2 col-form-label">매물 사진</label>
+            <div class="col-sm-10">
+                <div id="fileList"></div>
+                <input type="file" class="form-control" id="room_imgs" multiple>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="deposit" class="col-sm-2 col-form-label">보증금</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="deposit">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="monthly-fee" class="col-sm-2 col-form-label">월세</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="monthly_fee">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="maintain_cost" class="col-sm-2 col-form-label">관리비</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="maintain_cost">
+            </div>
+        </div>
+        <!-- <div class="form-group row">
+            <label for="maintain_includes" class="col-sm-2 col-form-label">관리비 포함항목</label>
+            <div class="col-sm-10" id="maintain_includes">
+                <label for="parking_area" class="col-form-label">
+                    <input type="checkbox" id="maintain_include" value="water">
+                    수도
+                </label>
+                <label for="parking_area" class="col-form-label">
+                    <input type="checkbox" id="maintain_include" value="TV">
+                    TV
+                </label>
+                <label for="parking_area" class="col-form-label">
+                    <input type="checkbox" id="maintain_include" value="internet">
+                    인터넷
+                </label>
+            </div>
+        </div> -->
+        <div class="form-group row">
+            <label for="room_size" class="col-sm-2 col-form-label">방의 실면적(㎡)</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="room_size">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="floor" class="col-sm-2 col-form-label">방의 층수</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="floor">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="building_floor" class="col-sm-2 col-form-label">건물의 층수</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="building_floor">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="building_date" class="col-sm-2 col-form-label">건축/리모델링 날짜</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" id="building_date">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="options" class="col-sm-2 col-form-label">옵션</label>
+            <div class="col-sm-10" id="options">
+                <div class="row">
+                    <div class="col">
+                        <label for="parking_area" class="col-form-label">
+                            <input type="checkbox" class="form-control" name="option" value="parking_area">
+                            주차공간
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label for="elevator" class="col-form-label">
+                            <input type="checkbox" class="form-control" name="option" value="elevator">
+                            엘리베이터
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label for="securitywindow" class="col-form-label">
+                            <input type="checkbox" class="form-control" name="option" value="securitywindow">
+                            방범창
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label for="cctv" class="col-form-label">
+                            <input type="checkbox" class="form-control" name="option" value="cctv">
+                            CCTV
+                        </label>
+                    </div>
+                    <div class="col">
+                        <label for="doorlock" class="col-form-label">
+                            <input type="checkbox" class="form-control" name="options" id="doorlock">
+                            도어락
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <button type="button" class="btn btn-primary" id="create_btn">등록</button>
+            <button class="btn btn-danger" id="cancel_btn">취소</button>
+        </div>
     </form>
-    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev"
-        style="color:black;">
-        <span class="carousel-control-prev-icon" style="color:black" aria-hidden="true"></span>
-        <span class="sr-only">Previous</span>
-    </a>
-    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-        <span class="sr-only">Next</span>
-    </a>
 </div>
 <script>
-    $("#register").click(function () {
-        var RoomArchiFile = $("#RoomArchi").val();
-        var imageURLFile = $("#imageURL").val();
+    const hashtags = [];
+    
+    const addHashTag = (hashtag) => {
+        if(hashtags.indexOf(hashtag) === -1) {
+            hashtags.push(hashtag)
+            $("#hashtag-lists").append(`
+            <span>
+                <i class="fa fa-times-circle" onclick="delHashTag(this)">#${hashtag} </i>
+            </span>
+            `);
+        }
+    }
 
-        if ($("#RoomTitle").val().length <= 0) {
-            alert("제목을 입력하세요");
-            $("#RoomTitle").focus();
-            return false;
+    const delHashTag = (elem) => {
+        const hashtag = elem.innerText.substr(1);
+        let idx = hashtags.indexOf(hashtag)
+        if (idx > -1) {
+            hashtags.splice(idx, 1);
+            elem.remove()
         }
-        else if (!RoomArchiFile) {
-            alert("방구조를 첨부하세요");
-            return false;
-        }
-        else if ($("#Deposit").val().length <= 0) {
-            alert("보증금을 입력하세요");
-            $("#Deposit").focus();
-            return false;
-        }
-        else if ($("#roomMonthlyFee").val().length <= 0) {
-            alert("월세를 입력하세요");
-            $("#roomMonthlyFee").focus();
-            return false;
-        }
-        else if ($("#ServiceFee").val().length <= 0) {
-            alert("관리비를 입력하세요");
-            $("#ServiceFee").focus();
-            return false;
-        }
-        else if ($("#Peong").val().length <= 0) {
-            alert("평수를 입력하세요");
-            $("#Peong").focus();
-            return false;
-        }
-        else if ($("#squareMeter").val().length <= 0) {
-            alert("원룸의 실면적을 입력하세요");
-            $("#squareMeter").focus();
-            return false;
-        }
-        else if ($("#RoomFloor").val().length <= 0) {
-            alert("층/건물 층수 를 입력하세요");
-            $("#RoomFloor").focus();
-            return false;
-        }
-        else if (!imageURLFile) {
-            alert("방사진을 첨부하세요");
-            return false;
-        }
-        else if ($("#lat").val().length <= 0) {
-            alert("경도를 입력하세요");
-            $("#lat").focus();
-            return false;
-        }
-        else if ($("#lng").val().length <= 0) {
-            alert("위도를 입력하세요");
-            $("#lng").focus();
-            return false;
-        }
-        else if ($("#callNumber").val().length <= 0) {
-            alert("집주인(중개사)번호 를 입력하세요");
-            $("#callNumber").focus();
-            return false;
-        }
-        else if ($("#Train").val().length <= 0) {
-            alert("인근지하철을 입력하세요");
-            $("#Train").focus();
-            return false;
-        }
-        else if ($("#Lighting").val().length <= 0) {
-            alert("채광을 입력하세요");
-            $("#Lighting").focus();
-            return false;
-        }
-        else if ($("#Remodeling").val().length <= 0) {
-            alert("리모델링 날짜를 입력하세요");
-            $("#Remodeling").focus();
-            return false;
-        }
-        else {
-            $("#register").submit();
-        }
+    }
+
+    $("#addHashtagBtn").click(() => {
+        addHashTag($("#hashtag").val())
     })
+
+    var images = []
+    var room = {
+        img_urls: [],
+        random_location: []
+    }
+    var region_code = undefined;
+    $("#create_btn").click(() => {
+        room.title = $("#title").val()
+        room.room_desc = $("#room_desc").val()
+        room.room_type = $("#room_type").val()
+        room.hash_tags = hashtags.map((val) => { return `#${val}` }).join(" ")
+        room.price_title = `${$("#deposit").val()}/${$("#monthly_fee").val()}`
+        room.maintain_cost = $("#maintain_cost").val()
+        room.room_size = $("#room_size").val()
+        room.floor = $("#floor").val()
+        room.building_floor = $("#building_floor").val()
+        room.building_date = $("#building_date").val()
+        room.options = []
+        $("input[name='option']").map((idx, elem) => { elem.checked ? room.options.push(elem.value) : null })
+
+        $.post("/proto/room/create", room, (data) => {
+            if(data["status"])
+                location = "/proto/room/list"
+        })
+    })
+
+    const deleteFile = (obj, idx) => {
+        $.get(`/proto/room/image/delete/${images[idx]}`)
+        obj.remove()
+    }
+
+    var filesTempArr = [];
+    $("#room_imgs").change((e) => {
+        var files = e.target.files;
+        var filesArr = Array.prototype.slice.call(files);
+        var filesArrLen = filesArr.length;
+        var filesTempArrLen = filesTempArr.length;
+        for( var i=0; i<filesArrLen; i++ ) {
+            filesTempArr.push(filesArr[i]);
+        }
+        $(this).val('');
+
+        var formData = new FormData();
+        for(var i=0, filesTempArrLen = filesTempArr.length; i<filesTempArrLen; i++) {
+            formData.append("images[]", filesTempArr[i]);
+        }
+
+        $.ajax({
+            type : "POST",
+            url : "/proto/room/upload",
+            data : formData,
+            processData: false,
+            contentType: false,
+            success : function(data) {
+                data["result"].map((val, idx, arr) => {
+                    $("#fileList").append(`
+                    <div style="display: inline-block;">
+                        <img src="/image/${val}" onclick="deleteFile(this, ${idx});" style="width: 100px; height: 100px;">
+                    </div>
+                    `);
+                    if(idx === 0)
+                        room.img_url = `/image/${val}`
+                    room.img_urls.push(`/image/${val}`)
+                    images.push(val)
+                })
+            },
+            err : function(err) {
+                console.log(err);
+            }
+        })
+    })
+
+    var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
+    mapOption = {
+        center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+        level: 3 // 지도의 확대 레벨
+    };
+
+    var map = new kakao.maps.Map(mapContainer, mapOption)
+
+    $("#searchAddrBtn").click(() => {
+        var geocoder = new kakao.maps.services.Geocoder()
+
+        geocoder.addressSearch($("#addr").val(), function(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                var coords = new kakao.maps.LatLng(result[0].y, result[0].x)
+                room.region_code = result[0].address.b_code.substr(0, 8)
+                room.random_location = [ result[0].x, result[0].y ]
+
+                var marker = new kakao.maps.Marker({
+                    map: map,
+                    position: coords
+                });
+
+                map.setCenter(coords)
+            }
+        });
+    })
+
 </script>
 {% endblock %}

@@ -4,6 +4,7 @@ from hashlib import sha256
 from database import task_redis, mongo
 from model.user import User
 from model.room_user import RoomUser
+from util import deserialize_json
 
 class UserAPI(object):
     def __init__(self):
@@ -24,7 +25,7 @@ class UserAPI(object):
     def signup(self, username, password):
         col: wrappers.Collection = mongo.db.users
         try:
-            user = User(username, sha256(password).hexdigest().decode())
+            user = User(username, sha256(password.encode()).hexdigest())
             col.insert_one(user.__dict__)
         except:
             return False
@@ -36,7 +37,7 @@ class UserAPI(object):
         try:
             user = RoomUser(
                 username,
-                sha256(password).hexdigest().decode(),
+                sha256(password.encode()).hexdigest(),
                 name, email, phone
             )
             col.insert_one(user.__dict__)
@@ -48,8 +49,8 @@ class UserAPI(object):
         col: wrappers.Collection = mongo.db.users
         result = col.find_one({
             "username": username,
-            "password": sha256(password).hexdigest().decode()
-        })
+            "password": sha256(password.encode()).hexdigest()
+        }, {'_id': False})
         if not result:
             return False
         return result
@@ -58,8 +59,8 @@ class UserAPI(object):
         col: wrappers.Collection = mongo.db.roomusers
         result = col.find_one({
             "username": username,
-            "password": sha256(password).hexdigest().decode()
-        })
+            "password": sha256(password.encode()).hexdigest()
+        }, {'_id': False})
         if not result:
             return False
         return result

@@ -82,3 +82,10 @@ class RoomAPI(object):
 
         col: wrappers.Collection = mongo.db.rooms
         col.delete_one({ "seq": seq })
+    
+    def deleteRoomMany(self, seqs):
+        col: wrappers.Collection = mongo.db.room_detail
+        col.delete_many({ "seq": { "$in": seqs } })
+
+        col: wrappers.Collection = mongo.db.rooms
+        col.delete_many({ "seq": { "$in": seqs } })

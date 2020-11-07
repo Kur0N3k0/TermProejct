@@ -11,6 +11,8 @@ from api.security_light import securityLightAPI
 from api.building import BuildingAPI
 from model.location import Location
 from model.room_detail import Room
+from model.user import User
+from util import login_required, roomuser_required
 from config import Config
 from appctx import app
 
@@ -63,7 +65,7 @@ def signin_roomuser():
 @router.route("/logout")
 def logout():
     session.clear()
-    return jsonify({})
+    return redirect("/")
 
 @router.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -249,31 +251,49 @@ def roomCreate():
     return render_template("/roomcreate.html")
 
 @router.route("/room/list")
+@roomuser_required
 def roomList():
-    return render_template("/roomlist.html")
+    user_id = session["userinfo"]["username"]
+    if not user_id:
+        return jsonify({ "status": -3 })
+    
+    result = roomAPI.listRoom(user_id)
+    return render_template("/roomlist.html", rooms=result)
 
 @router.route("/room/<int:seq>")
+@roomuser_required
 def roomDetail(seq):
     result = roomAPI.getRoomDetail(seq)
     if not result:
         result = None
     return render_template("/roomdetail.html", room=result)
 
-@router.route("/room/update")
-def roomUpdate():
+@router.route("/room/update/<int:seq>")
+@roomuser_required
+def roomUpdate(seq):
     if request.method == "POST":
         room = Room.from_request(request.form, is_update=True)
-        roomAPI.updateRoom(room)
+        roomAPI.updateRoom(seq, room)
         return jsonify({ "status": True })
 
-    return render_template("roomupdate.html")
+    room = roomAPI.getRoomDetail(seq)
+    return render_template("roomupdate.html", seq=seq, room=room)
+
+@router.route("/room/delete", methods=["POST"])
+@roomuser_required
+def roomDeleteMany():
+    seqs = request.form.getlist("seqs[]", int)
+    roomAPI.deleteRoomMany(seqs)
+    return jsonify({ "status": True })
 
 @router.route("/room/delete/<int:seq>")
+@roomuser_required
 def roomDelete(seq):
     roomAPI.deleteRoom(seq)
     return jsonify({ "status": True })
 
 @router.route("/room/upload", methods=["POST"])
+@roomuser_required
 def roomUpload():
     images = request.files.getlist("images[]")
     ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -294,6 +314,7 @@ def roomUpload():
     return jsonify({ "result": result })
 
 @router.route("/room/image/delete/<path>")
+@roomuser_required
 def roomImageDelete(path):
     os.unlink(os.path.join(app.config["UPLOAD_FOLDER"], path))
     return "deleted"

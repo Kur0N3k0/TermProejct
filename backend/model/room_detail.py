@@ -55,7 +55,7 @@ class Room(RoomInfo):
         }
         room.complex_name           = None
         room.premium_badge          = False
-        room.hash_tags              = form["hash_tags"]
+        room.hash_tags              = form.getlist("hash_tags[]")
         room.room_type_str          = Room.getRoomTypeStr(room.room_type)
         room.room_desc              = form["room_desc"]
         room.img_url                = form["img_url"]

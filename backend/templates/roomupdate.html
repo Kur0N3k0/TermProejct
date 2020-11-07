@@ -6,22 +6,16 @@
         <div class="form-group row">
             <label for="title" class="col-sm-2 col-form-label">제목</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="title">
+                <input type="text" class="form-control" id="title" value="{{ room.title }}">
             </div>
         </div>
-        <!-- <div class="form-group row">
-            <label for="room_desc" class="col-sm-2 col-form-label">설명</label>
-            <div class="col-sm-10">
-                <input type="text" class="form-control" id="room_desc">
-            </div>
-        </div> -->
         <div class="form-group row">
             <label for="room_type" class="col-sm-2 col-form-label">방 종류</label>
             <div class="col-sm-10">
                 <select class="form-control" id="room_type">
-                    <option value="0" selected>원룸</option>
-                    <option value="1">투룸</option>
-                    <option value="2">쓰리룸</option>
+                    <option value="0" {% if room.room_type == 0 %} selected {% endif %}>원룸</option>
+                    <option value="1" {% if room.room_type == 1 %} selected {% endif %}>투룸</option>
+                    <option value="2" {% if room.room_type == 2 %} selected {% endif %}>쓰리룸</option>
                 </select>
             </div>
         </div>
@@ -41,7 +35,11 @@
             <label for="hashtag" class="col-sm-2 col-form-label">해시태그</label>
             <div class="col-sm-10">
                 <div id="hashtag-lists">
-                    
+                    {% for tag in room.hash_tags %}
+                    <span>
+                        <i class="fa fa-times-circle" onclick="delHashTag(this)">#{{ tag }} </i>
+                    </span>
+                    {% endfor %}
                 </div>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
@@ -54,26 +52,32 @@
         <div class="form-group row">
             <label for="room_imgs" class="col-sm-2 col-form-label">매물 사진</label>
             <div class="col-sm-10">
-                <div id="fileList"></div>
+                <div id="fileList">
+                    {% for urls in room.img_urls %}
+                    <div style="display: inline-block;">
+                        <img src="{{ urls }}" onclick="deleteFile(this, {{ loop.index }});" style="width: 100px; height: 100px;">
+                    </div>
+                    {% endfor %}
+                </div>
                 <input type="file" class="form-control" id="room_imgs" multiple>
             </div>
         </div>
         <div class="form-group row">
             <label for="deposit" class="col-sm-2 col-form-label">보증금</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="deposit">
+                <input type="text" class="form-control" id="deposit" value="{{ room.price_title.split('/')[0] }}">
             </div>
         </div>
         <div class="form-group row">
             <label for="monthly-fee" class="col-sm-2 col-form-label">월세</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="monthly_fee">
+                <input type="text" class="form-control" id="monthly_fee" value="{{ room.price_title.split('/')[1] }}">
             </div>
         </div>
         <div class="form-group row">
             <label for="maintain_cost" class="col-sm-2 col-form-label">관리비</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="maintain_cost">
+                <input type="text" class="form-control" id="maintain_cost" value="{{ room.maintain_cost }}">
             </div>
         </div>
         <!-- <div class="form-group row">
@@ -96,25 +100,25 @@
         <div class="form-group row">
             <label for="room_size" class="col-sm-2 col-form-label">방의 실면적(㎡)</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="room_size">
+                <input type="text" class="form-control" id="room_size" value="{{ room.room_desc.split(' | ')[2][:-2] }}">
             </div>
         </div>
         <div class="form-group row">
             <label for="floor" class="col-sm-2 col-form-label">방의 층수</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="floor">
+                <input type="text" class="form-control" id="floor" value="{{ room.floor }}">
             </div>
         </div>
         <div class="form-group row">
             <label for="building_floor" class="col-sm-2 col-form-label">건물의 층수</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="building_floor">
+                <input type="text" class="form-control" id="building_floor" value="{{ room.building_floor }}">
             </div>
         </div>
         <div class="form-group row">
             <label for="building_date" class="col-sm-2 col-form-label">건축/리모델링 날짜</label>
             <div class="col-sm-10">
-                <input type="text" class="form-control" id="building_date">
+                <input type="text" class="form-control" id="building_date" value="{{ room.building_date }}">
             </div>
         </div>
         <div class="form-group row">
@@ -123,31 +127,31 @@
                 <div class="row">
                     <div class="col">
                         <label for="parking_area" class="col-form-label">
-                            <input type="checkbox" class="form-control" name="option" value="parking_area">
+                            <input type="checkbox" class="form-control" name="option" value="parking_area" {% if "parking_area" in room.options %} checked {% endif %}>
                             주차공간
                         </label>
                     </div>
                     <div class="col">
                         <label for="elevator" class="col-form-label">
-                            <input type="checkbox" class="form-control" name="option" value="elevator">
+                            <input type="checkbox" class="form-control" name="option" value="elevator" {% if "elevator" in room.options %} checked {% endif %}>
                             엘리베이터
                         </label>
                     </div>
                     <div class="col">
                         <label for="securitywindow" class="col-form-label">
-                            <input type="checkbox" class="form-control" name="option" value="securitywindow">
+                            <input type="checkbox" class="form-control" name="option" value="securitywindow" {% if "securitywindow" in room.options %} checked {% endif %}>
                             방범창
                         </label>
                     </div>
                     <div class="col">
                         <label for="cctv" class="col-form-label">
-                            <input type="checkbox" class="form-control" name="option" value="cctv">
+                            <input type="checkbox" class="form-control" name="option" value="cctv" {% if "cctv" in room.options %} checked {% endif %}>
                             CCTV
                         </label>
                     </div>
                     <div class="col">
                         <label for="doorlock" class="col-form-label">
-                            <input type="checkbox" class="form-control" name="options" id="doorlock">
+                            <input type="checkbox" class="form-control" name="options" id="doorlock" {% if "doorlock" in room.options %} checked {% endif %}>
                             도어락
                         </label>
                     </div>
@@ -155,13 +159,13 @@
             </div>
         </div>
         <div style="text-align: center;">
-            <button type="button" class="btn btn-primary" id="create_btn">등록</button>
+            <button type="button" class="btn btn-primary" id="create_btn">수정</button>
             <button class="btn btn-danger" id="cancel_btn">취소</button>
         </div>
     </form>
 </div>
 <script>
-    const hashtags = [];
+    const hashtags = [ {% for tag in room.hash_tags %} "{{ tag }}", {% endfor %} ];
     
     const addHashTag = (hashtag) => {
         if(hashtags.indexOf(hashtag) === -1) {
@@ -183,16 +187,13 @@
         }
     }
 
-    const roomTypeStr = (type) => {
-        type = parseInt(type)
-        return type == 0 ? "원룸" : type == 1 ? "투룸" : "쓰리룸"
-    }
-
     $("#addHashtagBtn").click(() => {
         addHashTag($("#hashtag").val())
     })
 
-    var images = []
+    var images = [
+        {% for url in room.img_urls %} '{{ url.split("/")[-1] }}', {% endfor %}
+    ]
     var room = {
         img_urls: [],
         random_location: []
@@ -202,11 +203,11 @@
         room.title = $("#title").val()
         room.room_desc = [
             roomTypeStr($("#room_type").val()),
-            $("#floor").val() + "층",
+            $("#floor").val(),
             `${$("#room_size").val()}㎡`
         ].join(" | ")
         room.room_type = $("#room_type").val()
-        room.hash_tags = hashtags
+        room.hash_tags = hashtags.map((val) => { return `#${val}` }).join(" ")
         room.price_title = `${$("#deposit").val()}/${$("#monthly_fee").val()}`
         room.maintain_cost = $("#maintain_cost").val()
         room.room_size = $("#room_size").val()
@@ -216,7 +217,7 @@
         room.options = []
         $("input[name='option']").map((idx, elem) => { elem.checked ? room.options.push(elem.value) : null })
 
-        $.post("/proto/room/create", room, (data) => {
+        $.post("/proto/room/update/{{ seq }}", room, (data) => {
             if(data["status"])
                 location = "/proto/room/list"
         })
@@ -270,7 +271,7 @@
 
     var mapContainer = document.getElementById('map'), // 지도를 표시할 div 
     mapOption = {
-        center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
+        center: new kakao.maps.LatLng({{ room.random_location[1] }}, {{ room.random_location[0] }}), // 지도의 중심좌표
         level: 3 // 지도의 확대 레벨
     };
 

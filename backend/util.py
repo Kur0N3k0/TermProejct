@@ -1,27 +1,39 @@
 import string, random
 from functools import wraps
-from flask import session, redirect, request
+from flask import session, redirect, request, jsonify
 from flask_pymongo import pymongo, wrappers
 
 from database import mongo
 # from models.token import Token
-# from models.user import User
+from model.user import User
 
 def login_required(func):
     @wraps(func)
     def deco(*args, **kwargs):
-        if session.get("username") == None:
-            return redirect("/signin")
+        if session.get("userinfo") == None:
+            return redirect("/proto/signin")
         return func(*args, **kwargs)
     return deco
 
 def admin_required(func):
     @wraps(func)
     def deco(*args, **kwargs):
-        if session.get("username") == None:
-            return redirect("/signin")
-        if session.get("level") == 0:
+        info = session.get("userinfo")
+        if info == None:
+            return redirect("/proto/signin")
+        if info["level"] != User.ADMIN:
             return redirect("/")
+        return func(*args, **kwargs)
+    return deco
+
+def roomuser_required(func):
+    @wraps(func)
+    def deco(*args, **kwargs):
+        if session.get("userinfo") == None:
+            return redirect("/proto/signin/roomuser")
+        level = session["userinfo"]["level"]
+        if level != User.ADMIN and level != User.ROOM_USER:
+            return jsonify({ "result": "Authority error" })
         return func(*args, **kwargs)
     return deco
 

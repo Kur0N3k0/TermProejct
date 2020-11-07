@@ -9,7 +9,7 @@
                         <button type="button" class="btn btn-primary btn-sm" onclick="location=`/proto/room/create`">등록</button>
                     </td>
                     <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="sellDelete()">삭제</button>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteRoom()">삭제</button>
                     </td>
                 </tr>
             </table>
@@ -39,36 +39,50 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for room in rooms %}
                     <tr>
-                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
-                        <td>1</td>
-                        <td>가성비 원룸</td>
-                        <td>영남대역</td>
-                        <td>200만원</td>
-                        <td>50만원</td>
-                        <td>2020-04-28</td>
+                        <th scope="row"><input type="checkbox" class="check" data-seq="{{ room.seq }}" aria-label="Checkbox for delete"></th>
+                        <td>{{ room.seq }}</td>
+                        <td>{{ room.title }}</td>
+                        <td class="loc" data-locs="{{ room.random_location }}"></td>
+                        <td>{{ room.price_title.split('/')[0] }}</td>
+                        <td>{{ room.price_title.split('/')[1] }}</td>
+                        <td>{{ room.reg_date }}</td>
                     </tr>
-                    <tr>
-                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
-                        <td>2</td>
-                        <td>넓은 원룸</td>
-                        <td>동대구역</td>
-                        <td>100만원</td>
-                        <td>20만원</td>
-                        <td>2020-03-21</td>
-                    </tr>
-                    <tr>
-                        <th scope="row"><input type="checkbox" class="check" aria-label="Checkbox for delete"></th>
-                        <td>3</td>
-                        <td>원룸</td>
-                        <td>동대구역</td>
-                        <td>250만원</td>
-                        <td>30만원</td>
-                        <td>2019-03-21</td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+<script>
+    const geocoder = new kakao.maps.services.Geocoder();
+    $(".loc").each((idx, elem) => {
+        coords = eval($(elem).attr("data-locs"))
+        geocoder.coord2RegionCode(coords[0], coords[1], (result, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+                elem.innerText = result[0].address_name;
+            }
+        })
+    })
+    
+    const checkAll = () => {
+        $(".check").each((idx, elem) => {
+            $(elem).prop("checked", true)
+        })
+    }
+
+    const deleteRoom = () => {
+        var req = { "seqs[]": [] }
+        $(".check").each((idx, elem) => {
+            if($(elem).is(":checked")) {
+                req["seqs[]"].push($(elem).attr("data-seq"))
+            }
+        })
+        
+        $.post("/proto/room/delete", req, (data) => {
+            console.log(data)
+        })
+    }
+</script>
 {% endblock %}

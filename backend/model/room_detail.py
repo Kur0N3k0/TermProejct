@@ -1,5 +1,6 @@
 from flask import session
 from flask_pymongo import wrappers
+from datetime import datetime
 
 from database import mongo
 from model.room_info import RoomInfo
@@ -76,7 +77,7 @@ class Room(RoomInfo):
         room.building_floor         = int(form["building_floor"])
         room.room_count             = int(form["room_type"]) + 1
         room.bath_count             = 1
-        room.reg_date               = "" # today
+        room.reg_date               = datetime.now().strftime('%Y-%m-%d %H:%M:%S') # today
         room.building_date          = form["building_date"]
         room.maintain_cost          = int(form["maintain_cost"])
         room.options                = form.getlist("options[]")

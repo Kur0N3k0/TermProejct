@@ -114,8 +114,14 @@ def searchLocations():
 def searchRoom():
     full_name = request.args.get("full_name", "")
 
+    is_user = False
+    if "userinfo" in session:
+        is_user = True
+    print(is_user)
+
     return render_template("/prototype.html", keyword={
         "full_name": full_name,
+        "is_user": is_user
     })
 
 @router.route("/rooms")
@@ -242,6 +248,7 @@ def roomsFilter():
     return jsonify({ "rooms": [] })
 
 @router.route("/room/create", methods=["GET", "POST"])
+@roomuser_required
 def roomCreate():
     if request.method == "POST":
         room = Room.from_request(request.form)
@@ -261,12 +268,15 @@ def roomList():
     return render_template("/roomlist.html", rooms=result)
 
 @router.route("/room/<int:seq>")
-@roomuser_required
 def roomDetail(seq):
     result = roomAPI.getRoomDetail(seq)
     if not result:
         result = None
     return render_template("/roomdetail.html", room=result)
+
+@router.route("/api/room/<int:seq>")
+def roomDetailAPI(seq):
+    return jsonify(roomAPI.getRoomDetail(seq).__dict__)
 
 @router.route("/room/update/<int:seq>")
 @roomuser_required

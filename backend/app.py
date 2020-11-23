@@ -10,6 +10,14 @@ database.initialize()
 def main():
     return render_template("/main.html")
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_file("static/favicon.ico")
+
+@app.route("/bg_blur.jpg")
+def bg_blur():
+    return send_file("static/bg_blur.jpg")
+
 @app.route("/image/<path>")
 def imageLink(path):
     return send_file(os.path.join(app.config["UPLOAD_FOLDER"], path))

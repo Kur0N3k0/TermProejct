@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="kr">
     <head>
-        <title>Prototype - MyFitRoom</title>
+        <title>My Fit Room</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/11.0.2/css/bootstrap-slider.min.css" integrity="sha512-3q8fi8M0VS+X/3n64Ndpp6Bit7oXSiyCnzmlx6IDBLGlY5euFySyJ46RUlqIVs0DPCGOypqP8IRk/EyPvU28mQ==" crossorigin="anonymous" />
@@ -16,13 +16,22 @@
             <header>
                 <nav class="navbar navbar-light border-bottom">
                     <a class="navbar-brand" href="/">
-                        <img src="" width="30" height="30" class="d-inline-block align-top" alt="">
-                        MyFitRoom
+                        <img src="/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
+                        My Fit Room
                     </a>
                     <div>
+                        {% if "userinfo" not in session %}
                         <a href="/proto/signin">로그인</a>
                         <span>/</span>
                         <a href="/proto/signup">가입</a>
+                        {% else %}
+                            {{ session["userinfo"]["name"] }}
+                            {% if session["userinfo"]["level"] == 1 %}
+                            중개인
+                            {% endif %}
+                            님 안녕하세요.
+                        <a href="/proto/logout">로그아웃</a>
+                        {% endif %}
                     </div>
                 </nav>
             </header>
